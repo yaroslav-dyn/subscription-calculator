@@ -19,13 +19,14 @@ import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 
 import App from './App.tsx'
+import SubscriptionCalculator from './components/SubscriptionCalculator'
 
 const rootRoute = createRootRoute({
   component: () => (
     <>
-      <Header />
+      {/* <Header /> */}
       <Outlet />
-      <TanStackRouterDevtools />
+      {/* <TanStackRouterDevtools /> */}
     </>
   ),
 })
@@ -36,8 +37,15 @@ const indexRoute = createRoute({
   component: App,
 })
 
+const CalculatorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calculator',
+  component: SubscriptionCalculator,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  CalculatorRoute,
   TanStackQueryDemo(rootRoute),
   StoreDemo(rootRoute),
 ])
