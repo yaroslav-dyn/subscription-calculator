@@ -18,12 +18,14 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState('');
   const [period, setPeriod] = React.useState<'monthly' | 'yearly'>('monthly');
+  const [currency, setCurrency] = React.useState<'USD' | 'EUR' | 'UAH'>('USD');
 
   React.useEffect(() => {
     if (subscription) {
       setName(subscription.name);
       setPrice(subscription.price.toString());
       setPeriod(subscription.period);
+      setCurrency(subscription.currency);
     }
   }, [subscription]);
 
@@ -34,6 +36,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
         name,
         price: parseFloat(price),
         period,
+        currency,
       });
     }
   };
@@ -66,14 +69,23 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
               className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value as 'monthly' | 'yearly')}
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as 'USD' | 'EUR' | 'UAH')}
               className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
             >
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="UAH">UAH</option>
             </select>
           </div>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as 'monthly' | 'yearly')}
+            className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+          >
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
         </div>
         <div className="mt-6 flex justify-end gap-4">
           <button

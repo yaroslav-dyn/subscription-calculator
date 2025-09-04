@@ -27,11 +27,11 @@ import EditSubscriptionModal from './EditSubscriptionModal';
 const SubscriptionCalculator = () => {
   const { popularServices, subscriptions } = useStore(subscriptionStore, (state) => state);
 
-  const [domains, setDomains] = useState([]);
+  const [domains, setDomains] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDomainForm, setShowDomainForm] = useState(false);
   const [projectionYears, setProjectionYears] = useState(5);
-  const [currency, setCurrency] = useState('USD');
+  const [displayCurrency, setDisplayCurrency] = useState<'USD' | 'EUR' | 'UAH'>('USD');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
@@ -40,6 +40,7 @@ const SubscriptionCalculator = () => {
     name: '',
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
+    currency: 'USD' as 'USD' | 'EUR' | 'UAH',
   });
 
   const [newDomain, setNewDomain] = useState({
@@ -59,23 +60,26 @@ const SubscriptionCalculator = () => {
   };
 
   const currencies = {
-    USD: { symbol: '$', rate: 1 },
-    EUR: { symbol: '€', rate: 0.85 },
-    UAH: { symbol: '₴', rate: 41 },
+    USD: { symbol: '$', rate: 1 }, // Base currency
+    EUR: { symbol: '€', rate: 1.08 }, // 1 EUR = 1.08 USD
+    UAH: { symbol: '₴', rate: 0.025 }, // 1 UAH = 0.025 USD
   };
 
-  const formatCurrency = (amount: number) => {
-    const symbol = currencies[currency].symbol;
-    const convertedAmount = amount * currencies[currency].rate;
-    return `${symbol}${convertedAmount.toFixed(2)}`;
+  const formatCurrency = (amount: number, currencyCode: 'USD' | 'EUR' | 'UAH') => {
+    const symbol = currencies[currencyCode].symbol;
+    return `${symbol}${amount.toFixed(2)}`;
   };
 
-  const calculateYearlyCost = (price, period) => {
-    return price * periods[period].multiplier;
+  const calculateYearlyCost = (sub: Subscription) => {
+    // Convert subscription price to the base currency (USD)
+    const priceInBaseCurrency = sub.price * currencies[sub.currency].rate;
+    // Convert from base currency to the selected display currency
+    const priceInDisplayCurrency = priceInBaseCurrency / currencies[displayCurrency].rate;
+    return priceInDisplayCurrency * periods[sub.period].multiplier;
   };
 
-  const addSubscription = (service: Omit<Subscription, 'id'>) => {
-    addSubscriptionToAction({ ...service });
+  const addSubscription = (service: Subscription) => {
+    addSubscriptionToAction(service);
   };
 
   const addCustomSubscription = () => {
@@ -83,8 +87,9 @@ const SubscriptionCalculator = () => {
       addSubscription({
         ...newSub,
         price: parseFloat(newSub.price),
+        currency: displayCurrency,
       });
-      setNewSub({ name: '', price: '', period: 'monthly' });
+      setNewSub({ name: '', price: '', period: 'monthly', currency: 'USD' });
       setShowAddForm(false);
     }
   };
@@ -109,11 +114,11 @@ const SubscriptionCalculator = () => {
     }
   };
 
-  const removeDomain = (id) => {
+  const removeDomain = (id: number) => {
     setDomains(domains.filter((domain) => domain.id !== id));
   };
 
-  const getDaysUntilExpiry = (expiryDate) => {
+  const getDaysUntilExpiry = (expiryDate: string) => {
     const today = new Date();
     const expiry = new Date(expiryDate);
     const diffTime = expiry.getTime() - today.getTime();
@@ -130,7 +135,7 @@ const SubscriptionCalculator = () => {
       .sort((a, b) => getDaysUntilExpiry(a.expiryDate) - getDaysUntilExpiry(b.expiryDate));
   };
 
-  const getStatusColor = (daysLeft) => {
+  const getStatusColor = (daysLeft: number) => {
     if (daysLeft < 0) return 'text-gray-400'; // Expired
     if (daysLeft <= 1) return 'text-red-400'; // Critical
     if (daysLeft <= 7) return 'text-orange-400'; // Warning
@@ -138,7 +143,7 @@ const SubscriptionCalculator = () => {
     return 'text-green-400'; // Safe
   };
 
-  const getStatusBg = (daysLeft) => {
+  const getStatusBg = (daysLeft: number) => {
     if (daysLeft < 0) return 'bg-gray-500/20';
     if (daysLeft <= 1) return 'bg-red-500/20';
     if (daysLeft <= 7) return 'bg-orange-500/20';
@@ -152,7 +157,7 @@ const SubscriptionCalculator = () => {
 
   const getTotalCosts = () => {
     const yearlyTotal = subscriptions.reduce((total, sub) => {
-      return total + calculateYearlyCost(sub.price, sub.period);
+      return total + calculateYearlyCost(sub);
     }, 0);
 
     return {
@@ -205,10 +210,10 @@ const SubscriptionCalculator = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-white/90 text-sm mb-2 block">Currency</label>
+                  <label className="text-white/90 text-sm mb-2 block">Display Currency</label>
                   <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
+                    value={displayCurrency}
+                    onChange={(e) => setDisplayCurrency(e.target.value as 'USD' | 'EUR' | 'UAH')}
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
                     <option value="USD">USD ($)</option>
@@ -254,7 +259,7 @@ const SubscriptionCalculator = () => {
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{service.name}</span>
                       <span className="text-sm text-white/80">
-                        {formatCurrency(service.price)}/{service.period}
+                        {formatCurrency(service.price, service.currency)}/{service.period}
                       </span>
                     </div>
                   </button>
@@ -439,7 +444,7 @@ const SubscriptionCalculator = () => {
                               </span>
                               {domain.renewalCost > 0 && (
                                 <span className="text-white/60 text-sm">
-                                  {formatCurrency(domain.renewalCost)}/year
+                                  {formatCurrency(parseFloat(domain.renewalCost), displayCurrency)}/year
                                 </span>
                               )}
                             </div>
@@ -471,14 +476,14 @@ const SubscriptionCalculator = () => {
 
                 <div className="space-y-3">
                   {subscriptions.map((sub) => {
-                    const yearlyCost = calculateYearlyCost(sub.price, sub.period);
+                    const yearlyCost = calculateYearlyCost(sub);
                     return (
                       <div key={sub.name} className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <h4 className="text-white font-medium">{sub.name}</h4>
                             <p className="text-white/60 text-sm">
-                              {formatCurrency(sub.price)} per {sub.period}
+                              {formatCurrency(sub.price, sub.currency)} per {sub.period}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -499,11 +504,11 @@ const SubscriptionCalculator = () => {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="text-center p-2 bg-white/10 rounded-lg">
                             <p className="text-white/60">Yearly Cost</p>
-                            <p className="text-white font-semibold">{formatCurrency(yearlyCost)}</p>
+                            <p className="text-white font-semibold">{formatCurrency(yearlyCost, displayCurrency)}</p>
                           </div>
                           <div className="text-center p-2 bg-white/10 rounded-lg">
                             <p className="text-white/60">{projectionYears}yr Total</p>
-                            <p className="text-white font-semibold">{formatCurrency(yearlyCost * projectionYears)}</p>
+                            <p className="text-white font-semibold">{formatCurrency(yearlyCost * projectionYears, displayCurrency)}</p>
                           </div>
                         </div>
                       </div>
@@ -524,15 +529,15 @@ const SubscriptionCalculator = () => {
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
                   <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                     <p className="text-white/80 text-sm mb-1">Monthly Total</p>
-                    <p className="text-2xl font-bold text-green-300">{formatCurrency(getTotalCosts().monthly)}</p>
+                    <p className="text-2xl font-bold text-green-300">{formatCurrency(getTotalCosts().monthly, displayCurrency)}</p>
                   </div>
                   <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                     <p className="text-white/80 text-sm mb-1">Yearly Total</p>
-                    <p className="text-2xl font-bold text-blue-300">{formatCurrency(getTotalCosts().yearly)}</p>
+                    <p className="text-2xl font-bold text-blue-300">{formatCurrency(getTotalCosts().yearly, displayCurrency)}</p>
                   </div>
                   <div className="text-center p-4 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl backdrop-blur-sm border border-white/20">
                     <p className="text-white/80 text-sm mb-1">{projectionYears}-Year Total</p>
-                    <p className="text-3xl font-bold text-white">{formatCurrency(getTotalCosts().projection)}</p>
+                    <p className="text-3xl font-bold text-white">{formatCurrency(getTotalCosts().projection, displayCurrency)}</p>
                   </div>
                 </div>
 
@@ -544,7 +549,7 @@ const SubscriptionCalculator = () => {
                   </h4>
                   <div className="space-y-2 text-white/80">
                     <p>
-                      💰 You spend <strong>{formatCurrency(getInsights().dailyCost)}</strong> per day on subscriptions
+                      💰 You spend <strong>{formatCurrency(getInsights().dailyCost, displayCurrency)}</strong> per day on subscriptions
                     </p>
                     <p>
                       ✈️ Your subscriptions cost equals a vacation every{' '}
@@ -582,7 +587,6 @@ const SubscriptionCalculator = () => {
         subscription={editingSubscription}
         onSave={handleSaveSubscription}
       />
-      
     </div>
   );
 };
