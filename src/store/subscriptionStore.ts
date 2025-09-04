@@ -1,17 +1,20 @@
 import { Store } from '@tanstack/store';
 
+export type Currency = 'USD' | 'EUR' | 'UAH';
+
 // Define the shape of a subscription
 export interface Subscription {
   name: string;
   price: number;
   period: 'monthly' | 'yearly';
-  currency: 'USD' | 'EUR' | 'UAH';
+  currency: Currency;
 }
 
 // Define the shape of the store's state
 interface SubscriptionStoreState {
   popularServices: Subscription[];
   subscriptions: Subscription[];
+  displayCurrency: Currency;
 }
 
 // A list of popular services that can be used as suggestions
@@ -32,6 +35,7 @@ const popularServices: Subscription[] = [
 const defaultState: SubscriptionStoreState = {
   popularServices,
   subscriptions: [],
+  displayCurrency: 'USD',
 };
 
 // Function to safely get the initial state from localStorage
@@ -102,6 +106,17 @@ export const updateSubscription = (
     subscriptions: state.subscriptions.map((s) =>
       s.name === subscriptionName ? { ...s, ...updatedValues } : s,
     ),
+  }));
+};
+
+/**
+ * Updates the display currency.
+ * @param currency The new currency to set.
+ */
+export const updateDisplayCurrency = (currency: Currency) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    displayCurrency: currency,
   }));
 };
 

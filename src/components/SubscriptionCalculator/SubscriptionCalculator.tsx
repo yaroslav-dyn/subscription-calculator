@@ -20,18 +20,19 @@ import {
   addSubscription as addSubscriptionToAction,
   removeSubscription as removeSubscriptionFromAction,
   updateSubscription as updateSubscriptionAction,
+  updateDisplayCurrency,
   type Subscription,
+  type Currency,
 } from '@/store/subscriptionStore';
 import EditSubscriptionModal from './EditSubscriptionModal';
 
 const SubscriptionCalculator = () => {
-  const { popularServices, subscriptions } = useStore(subscriptionStore, (state) => state);
+  const { popularServices, subscriptions, displayCurrency } = useStore(subscriptionStore, (state) => state);
 
   const [domains, setDomains] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDomainForm, setShowDomainForm] = useState(false);
   const [projectionYears, setProjectionYears] = useState(5);
-  const [displayCurrency, setDisplayCurrency] = useState<'USD' | 'EUR' | 'UAH'>('USD');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
@@ -40,7 +41,7 @@ const SubscriptionCalculator = () => {
     name: '',
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
-    currency: 'USD' as 'USD' | 'EUR' | 'UAH',
+    currency: 'USD' as Currency,
   });
 
   const [newDomain, setNewDomain] = useState({
@@ -65,7 +66,7 @@ const SubscriptionCalculator = () => {
     UAH: { symbol: '₴', rate: 0.025 }, // 1 UAH = 0.025 USD
   };
 
-  const formatCurrency = (amount: number, currencyCode: 'USD' | 'EUR' | 'UAH') => {
+  const formatCurrency = (amount: number, currencyCode: Currency) => {
     const symbol = currencies[currencyCode].symbol;
     return `${symbol}${amount.toFixed(2)}`;
   };
@@ -191,8 +192,8 @@ const SubscriptionCalculator = () => {
       <div className="relative max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
-            <Calculator className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
+            <Calculator className="w-8 h-8 md:w-12 md:h-12 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Subscription Cost Calculator</h1>
           <p className="text-white/70">Discover the true lifetime cost of your subscriptions</p>
@@ -213,7 +214,7 @@ const SubscriptionCalculator = () => {
                   <label className="text-white/90 text-sm mb-2 block">Display Currency</label>
                   <select
                     value={displayCurrency}
-                    onChange={(e) => setDisplayCurrency(e.target.value as 'USD' | 'EUR' | 'UAH')}
+                    onChange={(e) => updateDisplayCurrency(e.target.value as Currency)}
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
                     <option value="USD">USD ($)</option>
