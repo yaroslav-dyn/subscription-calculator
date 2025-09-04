@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Netflix",
+        "price": 240,
+        "period": "monthly",
+        "currency": "UAH"
+    },
+    {
+        "name": "Vodafone",
+        "price": 260,
+        "period": "monthly",
+        "currency": "UAH"
+    },
+    {
+        "name": "Kyivstar internet",
+        "price": 400,
+        "period": "monthly",
+        "currency": "UAH"
+    },
+    {
+        "name": "Youtube Premium",
+        "price": 149,
+        "period": "monthly",
+        "currency": "UAH"
+    },
+    {
+        "name": "Youtube: Audiobooks from Max",
+        "price": 100,
+        "period": "monthly",
+        "currency": "UAH"
+    }
+]

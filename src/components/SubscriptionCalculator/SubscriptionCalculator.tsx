@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Calculator,
   Plus,
@@ -25,9 +25,11 @@ import {
   type Currency,
 } from '@/store/subscriptionStore';
 import EditSubscriptionModal from './EditSubscriptionModal';
+import { useCalculatorUtils } from '@/lib/utils';
 
 const SubscriptionCalculator = () => {
   const { popularServices, subscriptions, displayCurrency } = useStore(subscriptionStore, (state) => state);
+  const { periods, currencies, formatCurrency, $cr, getAPIRates } = useCalculatorUtils();
 
   const [domains, setDomains] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -52,26 +54,14 @@ const SubscriptionCalculator = () => {
     autoRenewal: false,
   });
 
-  const periods = {
-    weekly: { multiplier: 52, label: 'Weekly' },
-    monthly: { multiplier: 12, label: 'Monthly' },
-    quarterly: { multiplier: 4, label: 'Quarterly' },
-    'half-yearly': { multiplier: 2, label: 'Half-yearly' },
-    yearly: { multiplier: 1, label: 'Yearly' },
-  };
 
-  const currencies = {
-    USD: { symbol: '$', rate: 1 }, // Base currency
-    EUR: { symbol: '€', rate: 1.08 }, // 1 EUR = 1.08 USD
-    UAH: { symbol: '₴', rate: 0.025 }, // 1 UAH = 0.025 USD
-  };
+  useEffect(() => {
+    getAPIRates();
+  }, []);
 
-  const formatCurrency = (amount: number, currencyCode: Currency) => {
-    const symbol = currencies[currencyCode].symbol;
-    return `${symbol}${amount.toFixed(2)}`;
-  };
 
   const calculateYearlyCost = (sub: Subscription) => {
+
     // Convert subscription price to the base currency (USD)
     const priceInBaseCurrency = sub.price * currencies[sub.currency].rate;
     // Convert from base currency to the selected display currency
@@ -171,19 +161,22 @@ const SubscriptionCalculator = () => {
   const getInsights = () => {
     const totals = getTotalCosts();
     const vacationCost = 3000; // Average vacation cost
-    const yearsForVacation = totals.yearly > 0 ? Math.ceil(vacationCost / totals.yearly) : 0;
+    const yearsForVacation = totals.yearly > 0 ? Math.ceil(
+      $cr(vacationCost, displayCurrency) / totals.yearly 
+    ) : 0;
 
     return {
       vacationEquivalent: yearsForVacation,
       dailyCost: totals.yearly / 365,
-      coffeeEquivalent: totals.yearly > 0 ? Math.floor(totals.yearly / (5 * 365)) : 0, // $5 coffee
+      coffeeEquivalent: totals.yearly > 0 ? Math.floor(totals.yearly / (($cr(3, displayCurrency)) * 365)) : 0, // $3 coffee
     };
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
       {/* Background Elements */}
-      <div className="absolute min-h-screen inset-0">
+      <div className={`absolute min-h-screen md:inset-0`}>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
