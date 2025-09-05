@@ -1,24 +1,24 @@
 import { Store } from '@tanstack/store'
 
-export type Currency = 'USD' | 'EUR' | 'UAH'
+export type TCurrency = 'USD' | 'EUR' | 'UAH'
 
 // Define the shape of a subscription
-export interface Subscription {
+export interface ISubscription {
   name: string
   price: number
   period: 'monthly' | 'yearly'
-  currency: Currency
+  currency: TCurrency
 }
 
 // Define the shape of the store's state
 interface SubscriptionStoreState {
-  popularServices: Array<Subscription>
-  subscriptions: Array<Subscription>
-  displayCurrency: Currency
+  popularServices: Array<ISubscription>
+  subscriptions: Array<ISubscription>
+  displayCurrency: TCurrency
 }
 
 // A list of popular services that can be used as suggestions
-const popularServices: Array<Subscription> = [
+const popularServices: Array<ISubscription> = [
   { name: 'Netflix', price: 15.49, period: 'monthly', currency: 'USD' },
   { name: 'Spotify', price: 10.99, period: 'monthly', currency: 'USD' },
   { name: 'Disney+', price: 7.99, period: 'monthly', currency: 'USD' },
@@ -79,7 +79,7 @@ subscriptionStore.subscribe(() => {
  * Adds a new subscription to the user's list.
  * @param subscription The subscription to add.
  */
-export const addSubscription = (subscription: Subscription) => {
+export const addSubscription = (subscription: ISubscription) => {
   subscriptionStore.setState((state) => ({
     ...state,
     subscriptions: [...state.subscriptions, subscription],
@@ -106,7 +106,7 @@ export const removeSubscription = (subscriptionName: string) => {
  */
 export const updateSubscription = (
   subscriptionName: string,
-  updatedValues: Partial<Subscription>,
+  updatedValues: Partial<ISubscription>,
 ) => {
   subscriptionStore.setState((state) => ({
     ...state,
@@ -120,7 +120,7 @@ export const updateSubscription = (
  * Updates the display currency.
  * @param currency The new currency to set.
  */
-export const updateDisplayCurrency = (currency: Currency) => {
+export const updateDisplayCurrency = (currency: TCurrency) => {
   subscriptionStore.setState((state) => ({
     ...state,
     displayCurrency: currency,

@@ -14,28 +14,34 @@ import {
 } from 'lucide-react'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
+import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
-import type { Currency, Subscription } from '@/store/subscriptionStore';
+import DomainForm from './DomainForm'
+import type { ISubscription, TCurrency } from '@/store/subscriptionStore'
+import type {IDomain} from '@/lib/utils';
 import {
-
-
   addSubscription as addSubscriptionToAction,
   removeSubscription as removeSubscriptionFromAction,
   subscriptionStore,
   updateDisplayCurrency,
-  updateSubscription as updateSubscriptionAction
+  updateSubscription as updateSubscriptionAction,
 } from '@/store/subscriptionStore'
-import { useCalculatorUtils } from '@/lib/utils'
-import ModalUiWrapper from '../ui/ModalUiWrapper'
-import DomainForm from './DomainForm'
+import {  useCalculatorUtils, useDomainUtils } from '@/lib/utils'
 
 const SubscriptionCalculator = () => {
   const { popularServices, subscriptions, displayCurrency } = useStore(
     subscriptionStore,
     (state) => state,
   )
+  // SECTION: HOOKS
   const { periods, currencies, formatCurrency, $cr, getAPIRates } =
     useCalculatorUtils()
+  const {
+    getDaysUntilExpiry,
+    getExpiringDomains,
+    getStatusColor,
+    getStatusBg,
+  } = useDomainUtils()
 
   const [domains, setDomains] = useState<Array<any>>([])
   const [showAddForm, setShowAddForm] = useState(false)
@@ -44,16 +50,16 @@ const SubscriptionCalculator = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingSubscription, setEditingSubscription] =
-    useState<Subscription | null>(null)
+    useState<ISubscription | null>(null)
 
   const [newSub, setNewSub] = useState({
     name: '',
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
-    currency: 'USD' as Currency,
+    currency: 'USD' as TCurrency,
   })
 
-  const [newDomain, setNewDomain] = useState({
+  const [newDomain, setNewDomain] = useState<IDomain>({
     name: '',
     provider: 'Cloudflare',
     expiryDate: '',
@@ -65,7 +71,7 @@ const SubscriptionCalculator = () => {
     getAPIRates()
   }, [])
 
-  const calculateYearlyCost = (sub: Subscription) => {
+  const calculateYearlyCost = (sub: ISubscription) => {
     // Convert subscription price to the base currency (USD)
     const priceInBaseCurrency = sub.price * currencies[sub.currency].rate
     // Convert from base currency to the selected display currency
@@ -73,7 +79,6 @@ const SubscriptionCalculator = () => {
       priceInBaseCurrency / currencies[displayCurrency].rate
     return priceInDisplayCurrency * periods[sub.period].multiplier
   }
-
 
   const addCustomSubscription = () => {
     if (newSub.name && newSub.price) {
@@ -87,12 +92,12 @@ const SubscriptionCalculator = () => {
     }
   }
 
-  const handleEditClick = (sub: Subscription) => {
+  const handleEditClick = (sub: ISubscription) => {
     setEditingSubscription(sub)
     setIsEditModalOpen(true)
   }
 
-  const handleSaveSubscription = (updatedSubscription: Subscription) => {
+  const handleSaveSubscription = (updatedSubscription: ISubscription) => {
     updateSubscriptionAction(updatedSubscription.name, updatedSubscription)
     setIsEditModalOpen(false)
     setEditingSubscription(null)
@@ -100,7 +105,7 @@ const SubscriptionCalculator = () => {
 
   const addDomain = () => {
     if (newDomain.name && newDomain.expiryDate) {
-      const id = Date.now() + Math.random()
+      const id = new String(Date.now() + Math.random())
       setDomains([
         ...domains,
         {
@@ -122,42 +127,6 @@ const SubscriptionCalculator = () => {
 
   const removeDomain = (id: number) => {
     setDomains(domains.filter((domain) => domain.id !== id))
-  }
-
-  const getDaysUntilExpiry = (expiryDate: string) => {
-    const today = new Date()
-    const expiry = new Date(expiryDate)
-    const diffTime = expiry.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
-  }
-
-  const getExpiringDomains = () => {
-    return domains
-      .filter((domain) => {
-        const daysLeft = getDaysUntilExpiry(domain.expiryDate)
-        return daysLeft <= 30 && daysLeft >= 0
-      })
-      .sort(
-        (a, b) =>
-          getDaysUntilExpiry(a.expiryDate) - getDaysUntilExpiry(b.expiryDate),
-      )
-  }
-
-  const getStatusColor = (daysLeft: number) => {
-    if (daysLeft < 0) return 'text-gray-400' // Expired
-    if (daysLeft <= 1) return 'text-red-400' // Critical
-    if (daysLeft <= 7) return 'text-orange-400' // Warning
-    if (daysLeft <= 30) return 'text-yellow-400' // Attention
-    return 'text-green-400' // Safe
-  }
-
-  const getStatusBg = (daysLeft: number) => {
-    if (daysLeft < 0) return 'bg-gray-500/20'
-    if (daysLeft <= 1) return 'bg-red-500/20'
-    if (daysLeft <= 7) return 'bg-orange-500/20'
-    if (daysLeft <= 30) return 'bg-yellow-500/20'
-    return 'bg-green-500/20'
   }
 
   const removeSubscription = (name: string) => {
@@ -204,10 +173,9 @@ const SubscriptionCalculator = () => {
       </div>
 
       <div className="relative max-w-6xl mx-auto">
-
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Subscription Cost Calculator
+            ISubscription Cost Calculator
           </h1>
           <p className="text-white/70">
             Discover the true lifetime cost of your subscriptions
@@ -232,7 +200,7 @@ const SubscriptionCalculator = () => {
                   <select
                     value={displayCurrency}
                     onChange={(e) =>
-                      updateDisplayCurrency(e.target.value as Currency)
+                      updateDisplayCurrency(e.target.value as TCurrency)
                     }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
@@ -290,14 +258,14 @@ const SubscriptionCalculator = () => {
               </div>
             </div>
 
-            {/* Add Custom Subscription */}
+            {/* SECTION: Add Custom ISubscription */}
             <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
                 className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl text-white hover:from-purple-500/40 hover:to-pink-500/40 transition-all duration-300"
               >
                 <Plus className="w-5 h-5 mr-2" />
-                Add Custom Subscription
+                Add Custom ISubscription
               </button>
 
               {showAddForm && (
@@ -342,27 +310,27 @@ const SubscriptionCalculator = () => {
                     onClick={addCustomSubscription}
                     className="w-full p-2 bg-green-500/30 rounded-xl text-white hover:bg-green-500/40 transition-all duration-300"
                   >
-                    Add Subscription
+                    Add ISubscription
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Domain Renewal Tracker */}
+            {/* SECTION: Domain Renewal Tracker */}
             <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
               <h3 className="text-white font-semibold mb-4 flex items-center">
                 <Globe className="w-5 h-5 mr-2" />
                 Domain Renewals
               </h3>
 
-              {/* Expiring Domains Alert */}
-              {getExpiringDomains().length > 0 && (
+              {/* NOTE: Expiring Domains Alert */}
+              {getExpiringDomains(domains).length > 0 && (
                 <div className="mb-4 p-3 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-sm">
                   <div className="flex items-center text-red-300 mb-2">
                     <Bell className="w-4 h-4 mr-2" />
                     <span className="font-medium">Renewal Alerts</span>
                   </div>
-                  {getExpiringDomains().map((domain) => {
+                  {getExpiringDomains(domains).map((domain) => {
                     const daysLeft = getDaysUntilExpiry(domain.expiryDate)
                     return (
                       <div
@@ -390,82 +358,17 @@ const SubscriptionCalculator = () => {
                 Add Domain
               </button>
 
-              {showDomainForm && (
-                <div className="space-y-3 mb-4">
-                  <input
-                    type="text"
-                    placeholder="domain.com"
-                    value={newDomain.name}
-                    onChange={(e) =>
-                      setNewDomain({ ...newDomain, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  <div className="flex flex-col gap-2">
-                    <select
-                      value={newDomain.provider}
-                      onChange={(e) =>
-                        setNewDomain({ ...newDomain, provider: e.target.value })
-                      }
-                      className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      <option value="Cloudflare">Cloudflare</option>
-                      <option value="GoDaddy">GoDaddy</option>
-                      <option value="Namecheap">Namecheap</option>
-                      <option value="Google Domains">Google Domains</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <input
-                      type="number"
-                      placeholder="Renewal cost"
-                      value={newDomain.renewalCost}
-                      onChange={(e) =>
-                        setNewDomain({
-                          ...newDomain,
-                          renewalCost: e.target.value,
-                        })
-                      }
-                      className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                  <input
-                    type="date"
-                    value={newDomain.expiryDate}
-                    onChange={(e) =>
-                      setNewDomain({ ...newDomain, expiryDate: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="autoRenewal"
-                      checked={newDomain.autoRenewal}
-                      onChange={(e) =>
-                        setNewDomain({
-                          ...newDomain,
-                          autoRenewal: e.target.checked,
-                        })
-                      }
-                      className="mr-2"
-                    />
-                    <label
-                      htmlFor="autoRenewal"
-                      className="text-white/80 text-sm"
-                    >
-                      Auto-renewal enabled
-                    </label>
-                  </div>
-                  <button
-                    onClick={addDomain}
-                    className="w-full p-2 bg-blue-500/30 rounded-xl text-white hover:bg-blue-500/40 transition-all duration-300"
-                  >
-                    Add Domain
-                  </button>
-                </div>
-              )}
+              {/* TODO: A/B test. Check for mobile, current via modal*/}
+              {/* {showDomainForm && (
+                <DomainForm
+                  domain={newDomain}
+                  setDomain={(updatedDomain) => setNewDomain(updatedDomain)}
+                  onAdd={addDomain}
+                  onCancel={() => setShowDomainForm(false)}
+                />
+              )} */}
 
-              {/* Domain List */}
+              {/* NOTE: Domain List */}
               {domains.length > 0 && (
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {domains.map((domain) => {
@@ -688,13 +591,14 @@ const SubscriptionCalculator = () => {
         </div>
       </div>
 
+      {/* SECTION: Domain Renewals modal  */}
       {showDomainForm && (
         <ModalUiWrapper>
           <DomainForm
-            domain={newDomain} 
-            setDomain={(updatedDomain) => setNewDomain(updatedDomain)} 
-            onAdd={addDomain} 
-            onCancel={() => setShowDomainForm(false)} 
+            domain={newDomain}
+            setDomain={(updatedDomain) => setNewDomain(updatedDomain)}
+            onAdd={addDomain}
+            onCancel={() => setShowDomainForm(false)}
           />
         </ModalUiWrapper>
       )}

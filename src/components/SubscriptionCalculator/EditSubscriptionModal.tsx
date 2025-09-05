@@ -1,12 +1,12 @@
 import React from 'react'
 import { X } from 'lucide-react'
-import type {Subscription} from '@/store/subscriptionStore';
+import type { ISubscription } from '@/store/subscriptionStore'
 
 interface EditSubscriptionModalProps {
   isOpen: boolean
   onClose: () => void
-  subscription: Subscription | null
-  onSave: (updatedSubscription: Subscription) => void
+  subscription: ISubscription | null
+  onSave: (updatedSubscription: ISubscription) => void
 }
 
 const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
@@ -50,7 +50,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
       <div className="bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white font-semibold text-lg">
-            Edit Subscription
+            Edit ISubscription
           </h3>
           <button
             onClick={onClose}

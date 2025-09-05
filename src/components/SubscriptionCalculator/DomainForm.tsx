@@ -15,7 +15,12 @@ interface DomainFormProps {
   onCancel: () => void
 }
 
-const DomainForm: React.FC<DomainFormProps> = ({ domain, setDomain, onAdd, onCancel }) => {
+const DomainForm: React.FC<DomainFormProps> = ({
+  domain,
+  setDomain,
+  onAdd,
+  onCancel,
+}) => {
   return (
     <div className="space-y-3 mb-4">
       <input
@@ -41,7 +46,9 @@ const DomainForm: React.FC<DomainFormProps> = ({ domain, setDomain, onAdd, onCan
           type="number"
           placeholder="Renewal cost"
           value={domain.renewalCost}
-          onChange={(e) => setDomain({ ...domain, renewalCost: e.target.value })}
+          onChange={(e) =>
+            setDomain({ ...domain, renewalCost: e.target.value })
+          }
           className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
@@ -56,7 +63,9 @@ const DomainForm: React.FC<DomainFormProps> = ({ domain, setDomain, onAdd, onCan
           type="checkbox"
           id="autoRenewal"
           checked={domain.autoRenewal}
-          onChange={(e) => setDomain({ ...domain, autoRenewal: e.target.checked })}
+          onChange={(e) =>
+            setDomain({ ...domain, autoRenewal: e.target.checked })
+          }
           className="mr-2"
         />
         <label htmlFor="autoRenewal" className="text-white/80 text-sm">
@@ -78,9 +87,8 @@ const DomainForm: React.FC<DomainFormProps> = ({ domain, setDomain, onAdd, onCan
           Add Domain
         </button>
       </div>
-
     </div>
   )
-}//
+} //
 
 export default DomainForm

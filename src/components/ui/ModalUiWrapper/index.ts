@@ -1,3 +1,3 @@
-import ModalUiWrapper from './ModalUiWrapper';
+import ModalUiWrapper from './ModalUiWrapper'
 
-export default ModalUiWrapper;
+export default ModalUiWrapper

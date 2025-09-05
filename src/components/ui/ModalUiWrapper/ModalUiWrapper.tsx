@@ -1,11 +1,11 @@
-import { useEffect, type ReactNode } from 'react';
+import {  useEffect } from 'react'
+import type {ReactNode} from 'react';
 
 interface IModalUiWrapper {
   children: ReactNode
 }
 
 const ModalUiWrapper = ({ children }: IModalUiWrapper) => {
-
   useEffect(() => {
     console.log(`ModalUiWrapper mounted`)
   }, [])
@@ -19,4 +19,4 @@ const ModalUiWrapper = ({ children }: IModalUiWrapper) => {
   )
 }
 
-export default ModalUiWrapper;
+export default ModalUiWrapper
