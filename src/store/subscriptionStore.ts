@@ -1,3 +1,4 @@
+import type { IDomain } from '@/lib/utils'
 import { Store } from '@tanstack/store'
 
 export type TCurrency = 'USD' | 'EUR' | 'UAH'
@@ -14,7 +15,9 @@ export interface ISubscription {
 interface SubscriptionStoreState {
   popularServices: Array<ISubscription>
   subscriptions: Array<ISubscription>
+  domains: Array<IDomain>
   displayCurrency: TCurrency
+  newDomain: IDomain
 }
 
 // A list of popular services that can be used as suggestions
@@ -36,11 +39,21 @@ const popularServices: Array<ISubscription> = [
   { name: 'Canva Pro', price: 119.99, period: 'yearly', currency: 'USD' },
 ]
 
+const initialDomainState: IDomain = {
+  name: '',
+  provider: 'Cloudflare',
+  expiryDate: '',
+  renewalCost: '',
+  autoRenewal: false,
+}
+
 // Define the default state
 const defaultState: SubscriptionStoreState = {
   popularServices,
   subscriptions: [],
+  domains: [],
   displayCurrency: 'USD',
+  newDomain: initialDomainState,
 }
 
 // Function to safely get the initial state from localStorage
@@ -124,5 +137,45 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   subscriptionStore.setState((state) => ({
     ...state,
     displayCurrency: currency,
+  }))
+}
+
+/**
+ * Sets the new domain form state.
+ * @param domain The new domain state.
+ */
+export const setNewDomain = (domain: IDomain) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    newDomain: domain,
+  }))
+}
+
+/**
+ * Adds a new domain to the user's list.
+ */
+export const addDomain = () => {
+  subscriptionStore.setState((state) => {
+    const newDomain = {
+      ...state.newDomain,
+      id: new String(Date.now() + Math.random()),
+      renewalCost: parseFloat(state.newDomain.renewalCost) || 0,
+    }
+    return {
+      ...state,
+      domains: [...state.domains, newDomain],
+      newDomain: initialDomainState, // Reset form
+    }
+  })
+}
+
+/**
+ * Removes a domain from the user's list by its id.
+ * @param domainId The id of the domain to remove.
+ */
+export const removeDomain = (domainId: string) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    domains: state.domains.filter((d) => d.id !== domainId),
   }))
 }

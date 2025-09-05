@@ -1,16 +1,10 @@
+import { Globe } from 'lucide-react'
 import React from 'react'
-
-interface Domain {
-  name: string
-  provider: string
-  expiryDate: string
-  renewalCost: string
-  autoRenewal: boolean
-}
+import type { IDomain } from '@/lib/utils'
 
 interface DomainFormProps {
-  domain: Domain
-  setDomain: React.Dispatch<React.SetStateAction<Domain>>
+  domain: IDomain
+  setDomain: (domain: IDomain) => void
   onAdd: () => void
   onCancel: () => void
 }
@@ -23,6 +17,11 @@ const DomainForm: React.FC<DomainFormProps> = ({
 }) => {
   return (
     <div className="space-y-3 mb-4">
+      <h3 className="text-white font-semibold mb-4 flex items-center">
+        <Globe className="w-5 h-5 mr-2" />
+        Domain Renewals
+      </h3>
+
       <input
         type="text"
         placeholder="domain.com"
@@ -89,6 +88,6 @@ const DomainForm: React.FC<DomainFormProps> = ({
       </div>
     </div>
   )
-} //
+}
 
 export default DomainForm

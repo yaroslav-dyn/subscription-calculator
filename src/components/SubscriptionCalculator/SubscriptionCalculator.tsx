@@ -18,21 +18,26 @@ import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './DomainForm'
 import type { ISubscription, TCurrency } from '@/store/subscriptionStore'
-import type {IDomain} from '@/lib/utils';
 import {
   addSubscription as addSubscriptionToAction,
   removeSubscription as removeSubscriptionFromAction,
   subscriptionStore,
   updateDisplayCurrency,
   updateSubscription as updateSubscriptionAction,
+  addDomain as addDomainToAction,
+  removeDomain as removeDomainFromAction,
+  setNewDomain,
 } from '@/store/subscriptionStore'
-import {  useCalculatorUtils, useDomainUtils } from '@/lib/utils'
+import { useCalculatorUtils, useDomainUtils } from '@/lib/utils'
 
 const SubscriptionCalculator = () => {
-  const { popularServices, subscriptions, displayCurrency } = useStore(
-    subscriptionStore,
-    (state) => state,
-  )
+  const {
+    popularServices,
+    subscriptions,
+    displayCurrency,
+    domains,
+    newDomain,
+  } = useStore(subscriptionStore, (state) => state)
   // SECTION: HOOKS
   const { periods, currencies, formatCurrency, $cr, getAPIRates } =
     useCalculatorUtils()
@@ -43,7 +48,6 @@ const SubscriptionCalculator = () => {
     getStatusBg,
   } = useDomainUtils()
 
-  const [domains, setDomains] = useState<Array<any>>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [showDomainForm, setShowDomainForm] = useState(false)
   const [projectionYears, setProjectionYears] = useState(5)
@@ -57,14 +61,6 @@ const SubscriptionCalculator = () => {
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
     currency: 'USD' as TCurrency,
-  })
-
-  const [newDomain, setNewDomain] = useState<IDomain>({
-    name: '',
-    provider: 'Cloudflare',
-    expiryDate: '',
-    renewalCost: '',
-    autoRenewal: false,
   })
 
   useEffect(() => {
@@ -103,30 +99,11 @@ const SubscriptionCalculator = () => {
     setEditingSubscription(null)
   }
 
-  const addDomain = () => {
+  const handleAddDomain = () => {
     if (newDomain.name && newDomain.expiryDate) {
-      const id = new String(Date.now() + Math.random())
-      setDomains([
-        ...domains,
-        {
-          ...newDomain,
-          id,
-          renewalCost: parseFloat(newDomain.renewalCost) || 0,
-        },
-      ])
-      setNewDomain({
-        name: '',
-        provider: 'Cloudflare',
-        expiryDate: '',
-        renewalCost: '',
-        autoRenewal: false,
-      })
+      addDomainToAction()
       setShowDomainForm(false)
     }
-  }
-
-  const removeDomain = (id: number) => {
-    setDomains(domains.filter((domain) => domain.id !== id))
   }
 
   const removeSubscription = (name: string) => {
@@ -316,7 +293,7 @@ const SubscriptionCalculator = () => {
               )}
             </div>
 
-            {/* SECTION: Domain Renewal Tracker */}
+            {/*SECTION: Domain Renewal Tracker */}
             <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
               <h3 className="text-white font-semibold mb-4 flex items-center">
                 <Globe className="w-5 h-5 mr-2" />
@@ -357,16 +334,6 @@ const SubscriptionCalculator = () => {
                 <Plus className="w-5 h-5 mr-2" />
                 Add Domain
               </button>
-
-              {/* TODO: A/B test. Check for mobile, current via modal*/}
-              {/* {showDomainForm && (
-                <DomainForm
-                  domain={newDomain}
-                  setDomain={(updatedDomain) => setNewDomain(updatedDomain)}
-                  onAdd={addDomain}
-                  onCancel={() => setShowDomainForm(false)}
-                />
-              )} */}
 
               {/* NOTE: Domain List */}
               {domains.length > 0 && (
@@ -421,7 +388,9 @@ const SubscriptionCalculator = () => {
                             </div>
                           </div>
                           <button
-                            onClick={() => removeDomain(domain.id)}
+                            onClick={() =>
+                              removeDomainFromAction(domain.id as string)
+                            }
                             className="p-1 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -596,8 +565,8 @@ const SubscriptionCalculator = () => {
         <ModalUiWrapper>
           <DomainForm
             domain={newDomain}
-            setDomain={(updatedDomain) => setNewDomain(updatedDomain)}
-            onAdd={addDomain}
+            setDomain={setNewDomain}
+            onAdd={handleAddDomain}
             onCancel={() => setShowDomainForm(false)}
           />
         </ModalUiWrapper>
