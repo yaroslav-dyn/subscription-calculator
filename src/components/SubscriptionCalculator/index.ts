@@ -1,3 +1,3 @@
-import SubscriptionCalculator from './SubscriptionCalculator';
+import SubscriptionCalculator from './SubscriptionCalculator'
 
-export default SubscriptionCalculator;
+export default SubscriptionCalculator

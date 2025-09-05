@@ -1,70 +1,77 @@
-import { Store } from '@tanstack/store';
+import { Store } from '@tanstack/store'
 
-export type Currency = 'USD' | 'EUR' | 'UAH';
+export type Currency = 'USD' | 'EUR' | 'UAH'
 
 // Define the shape of a subscription
 export interface Subscription {
-  name: string;
-  price: number;
-  period: 'monthly' | 'yearly';
-  currency: Currency;
+  name: string
+  price: number
+  period: 'monthly' | 'yearly'
+  currency: Currency
 }
 
 // Define the shape of the store's state
 interface SubscriptionStoreState {
-  popularServices: Subscription[];
-  subscriptions: Subscription[];
-  displayCurrency: Currency;
+  popularServices: Array<Subscription>
+  subscriptions: Array<Subscription>
+  displayCurrency: Currency
 }
 
 // A list of popular services that can be used as suggestions
-const popularServices: Subscription[] = [
+const popularServices: Array<Subscription> = [
   { name: 'Netflix', price: 15.49, period: 'monthly', currency: 'USD' },
   { name: 'Spotify', price: 10.99, period: 'monthly', currency: 'USD' },
   { name: 'Disney+', price: 7.99, period: 'monthly', currency: 'USD' },
   { name: 'Amazon Prime', price: 139, period: 'yearly', currency: 'USD' },
   { name: 'Apple Music', price: 10.99, period: 'monthly', currency: 'USD' },
   { name: 'YouTube Premium', price: 13.99, period: 'monthly', currency: 'USD' },
-  { name: 'Adobe Creative Cloud', price: 52.99, period: 'monthly', currency: 'USD' },
+  {
+    name: 'Adobe Creative Cloud',
+    price: 52.99,
+    period: 'monthly',
+    currency: 'USD',
+  },
   { name: 'Microsoft 365', price: 69.99, period: 'yearly', currency: 'USD' },
   { name: 'Dropbox', price: 9.99, period: 'monthly', currency: 'USD' },
   { name: 'Canva Pro', price: 119.99, period: 'yearly', currency: 'USD' },
-];
+]
 
 // Define the default state
 const defaultState: SubscriptionStoreState = {
   popularServices,
   subscriptions: [],
   displayCurrency: 'USD',
-};
+}
 
 // Function to safely get the initial state from localStorage
 const getInitialState = (): SubscriptionStoreState => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const storedState = localStorage.getItem('subscription_store');
+    const storedState = localStorage.getItem('subscription_store')
     if (storedState) {
       try {
         // Merge the stored state with the default state to ensure all keys are present
-        return { ...defaultState, ...JSON.parse(storedState) };
+        return { ...defaultState, ...JSON.parse(storedState) }
       } catch (error) {
-        console.error('Error parsing state from localStorage:', error);
-        return defaultState;
+        console.error('Error parsing state from localStorage:', error)
+        return defaultState
       }
     }
   }
-  return defaultState;
-};
+  return defaultState
+}
 
 // Create the store with the initial state
-export const subscriptionStore = new Store<SubscriptionStoreState>(getInitialState());
+export const subscriptionStore = new Store<SubscriptionStoreState>(
+  getInitialState(),
+)
 
 // Subscribe to store changes to persist the entire state to localStorage
 subscriptionStore.subscribe(() => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const state = subscriptionStore.state;
-    localStorage.setItem('subscription_store', JSON.stringify(state));
+    const state = subscriptionStore.state
+    localStorage.setItem('subscription_store', JSON.stringify(state))
   }
-});
+})
 
 // --- Actions to manipulate the store ---
 
@@ -76,8 +83,8 @@ export const addSubscription = (subscription: Subscription) => {
   subscriptionStore.setState((state) => ({
     ...state,
     subscriptions: [...state.subscriptions, subscription],
-  }));
-};
+  }))
+}
 
 /**
  * Removes a subscription from the user's list by its name.
@@ -89,8 +96,8 @@ export const removeSubscription = (subscriptionName: string) => {
     subscriptions: state.subscriptions.filter(
       (s) => s.name !== subscriptionName,
     ),
-  }));
-};
+  }))
+}
 
 /**
  * Updates an existing subscription.
@@ -106,8 +113,8 @@ export const updateSubscription = (
     subscriptions: state.subscriptions.map((s) =>
       s.name === subscriptionName ? { ...s, ...updatedValues } : s,
     ),
-  }));
-};
+  }))
+}
 
 /**
  * Updates the display currency.
@@ -117,9 +124,5 @@ export const updateDisplayCurrency = (currency: Currency) => {
   subscriptionStore.setState((state) => ({
     ...state,
     displayCurrency: currency,
-  }));
-};
-
-
-
-
+  }))
+}

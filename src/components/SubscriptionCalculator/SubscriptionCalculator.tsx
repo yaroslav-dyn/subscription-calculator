@@ -1,50 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 import {
-  Calculator,
+  AlertCircle,
+  BarChart3,
+  Bell,
+  Clock,
+  Edit,
+  Globe,
+  PieChart,
   Plus,
+  Target,
   Trash2,
   TrendingUp,
-  PieChart,
-  BarChart3,
-  AlertCircle,
-  Target,
-  Globe,
-  Clock,
-  Bell,
-  Edit,
-} from 'lucide-react';
-import './caclulator.css';
-import { useStore } from '@tanstack/react-store';
+} from 'lucide-react'
+import './caclulator.css'
+import { useStore } from '@tanstack/react-store'
+import EditSubscriptionModal from './EditSubscriptionModal'
+import type { Currency, Subscription } from '@/store/subscriptionStore';
 import {
-  subscriptionStore,
+
+
   addSubscription as addSubscriptionToAction,
   removeSubscription as removeSubscriptionFromAction,
-  updateSubscription as updateSubscriptionAction,
+  subscriptionStore,
   updateDisplayCurrency,
-  type Subscription,
-  type Currency,
-} from '@/store/subscriptionStore';
-import EditSubscriptionModal from './EditSubscriptionModal';
-import { useCalculatorUtils } from '@/lib/utils';
+  updateSubscription as updateSubscriptionAction
+} from '@/store/subscriptionStore'
+import { useCalculatorUtils } from '@/lib/utils'
+import ModalUiWrapper from '../ui/ModalUiWrapper'
+import DomainForm from './DomainForm'
 
 const SubscriptionCalculator = () => {
-  const { popularServices, subscriptions, displayCurrency } = useStore(subscriptionStore, (state) => state);
-  const { periods, currencies, formatCurrency, $cr, getAPIRates } = useCalculatorUtils();
+  const { popularServices, subscriptions, displayCurrency } = useStore(
+    subscriptionStore,
+    (state) => state,
+  )
+  const { periods, currencies, formatCurrency, $cr, getAPIRates } =
+    useCalculatorUtils()
 
-  const [domains, setDomains] = useState<any[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showDomainForm, setShowDomainForm] = useState(false);
-  const [projectionYears, setProjectionYears] = useState(5);
+  const [domains, setDomains] = useState<Array<any>>([])
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [showDomainForm, setShowDomainForm] = useState(false)
+  const [projectionYears, setProjectionYears] = useState(5)
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingSubscription, setEditingSubscription] =
+    useState<Subscription | null>(null)
 
   const [newSub, setNewSub] = useState({
     name: '',
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
     currency: 'USD' as Currency,
-  });
+  })
 
   const [newDomain, setNewDomain] = useState({
     name: '',
@@ -52,129 +59,143 @@ const SubscriptionCalculator = () => {
     expiryDate: '',
     renewalCost: '',
     autoRenewal: false,
-  });
-
+  })
 
   useEffect(() => {
-    getAPIRates();
-  }, []);
-
+    getAPIRates()
+  }, [])
 
   const calculateYearlyCost = (sub: Subscription) => {
-
     // Convert subscription price to the base currency (USD)
-    const priceInBaseCurrency = sub.price * currencies[sub.currency].rate;
+    const priceInBaseCurrency = sub.price * currencies[sub.currency].rate
     // Convert from base currency to the selected display currency
-    const priceInDisplayCurrency = priceInBaseCurrency / currencies[displayCurrency].rate;
-    return priceInDisplayCurrency * periods[sub.period].multiplier;
-  };
+    const priceInDisplayCurrency =
+      priceInBaseCurrency / currencies[displayCurrency].rate
+    return priceInDisplayCurrency * periods[sub.period].multiplier
+  }
 
-  const addSubscription = (service: Subscription) => {
-    addSubscriptionToAction(service);
-  };
 
   const addCustomSubscription = () => {
     if (newSub.name && newSub.price) {
-      addSubscription({
+      addSubscriptionToAction({
         ...newSub,
         price: parseFloat(newSub.price),
         currency: displayCurrency,
-      });
-      setNewSub({ name: '', price: '', period: 'monthly', currency: 'USD' });
-      setShowAddForm(false);
+      })
+      setNewSub({ name: '', price: '', period: 'monthly', currency: 'USD' })
+      setShowAddForm(false)
     }
-  };
+  }
 
   const handleEditClick = (sub: Subscription) => {
-    setEditingSubscription(sub);
-    setIsEditModalOpen(true);
-  };
+    setEditingSubscription(sub)
+    setIsEditModalOpen(true)
+  }
 
   const handleSaveSubscription = (updatedSubscription: Subscription) => {
-    updateSubscriptionAction(updatedSubscription.name, updatedSubscription);
-    setIsEditModalOpen(false);
-    setEditingSubscription(null);
-  };
+    updateSubscriptionAction(updatedSubscription.name, updatedSubscription)
+    setIsEditModalOpen(false)
+    setEditingSubscription(null)
+  }
 
   const addDomain = () => {
     if (newDomain.name && newDomain.expiryDate) {
-      const id = Date.now() + Math.random();
-      setDomains([...domains, { ...newDomain, id, renewalCost: parseFloat(newDomain.renewalCost) || 0 }]);
-      setNewDomain({ name: '', provider: 'Cloudflare', expiryDate: '', renewalCost: '', autoRenewal: false });
-      setShowDomainForm(false);
+      const id = Date.now() + Math.random()
+      setDomains([
+        ...domains,
+        {
+          ...newDomain,
+          id,
+          renewalCost: parseFloat(newDomain.renewalCost) || 0,
+        },
+      ])
+      setNewDomain({
+        name: '',
+        provider: 'Cloudflare',
+        expiryDate: '',
+        renewalCost: '',
+        autoRenewal: false,
+      })
+      setShowDomainForm(false)
     }
-  };
+  }
 
   const removeDomain = (id: number) => {
-    setDomains(domains.filter((domain) => domain.id !== id));
-  };
+    setDomains(domains.filter((domain) => domain.id !== id))
+  }
 
   const getDaysUntilExpiry = (expiryDate: string) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+    const today = new Date()
+    const expiry = new Date(expiryDate)
+    const diffTime = expiry.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays
+  }
 
   const getExpiringDomains = () => {
     return domains
       .filter((domain) => {
-        const daysLeft = getDaysUntilExpiry(domain.expiryDate);
-        return daysLeft <= 30 && daysLeft >= 0;
+        const daysLeft = getDaysUntilExpiry(domain.expiryDate)
+        return daysLeft <= 30 && daysLeft >= 0
       })
-      .sort((a, b) => getDaysUntilExpiry(a.expiryDate) - getDaysUntilExpiry(b.expiryDate));
-  };
+      .sort(
+        (a, b) =>
+          getDaysUntilExpiry(a.expiryDate) - getDaysUntilExpiry(b.expiryDate),
+      )
+  }
 
   const getStatusColor = (daysLeft: number) => {
-    if (daysLeft < 0) return 'text-gray-400'; // Expired
-    if (daysLeft <= 1) return 'text-red-400'; // Critical
-    if (daysLeft <= 7) return 'text-orange-400'; // Warning
-    if (daysLeft <= 30) return 'text-yellow-400'; // Attention
-    return 'text-green-400'; // Safe
-  };
+    if (daysLeft < 0) return 'text-gray-400' // Expired
+    if (daysLeft <= 1) return 'text-red-400' // Critical
+    if (daysLeft <= 7) return 'text-orange-400' // Warning
+    if (daysLeft <= 30) return 'text-yellow-400' // Attention
+    return 'text-green-400' // Safe
+  }
 
   const getStatusBg = (daysLeft: number) => {
-    if (daysLeft < 0) return 'bg-gray-500/20';
-    if (daysLeft <= 1) return 'bg-red-500/20';
-    if (daysLeft <= 7) return 'bg-orange-500/20';
-    if (daysLeft <= 30) return 'bg-yellow-500/20';
-    return 'bg-green-500/20';
-  };
+    if (daysLeft < 0) return 'bg-gray-500/20'
+    if (daysLeft <= 1) return 'bg-red-500/20'
+    if (daysLeft <= 7) return 'bg-orange-500/20'
+    if (daysLeft <= 30) return 'bg-yellow-500/20'
+    return 'bg-green-500/20'
+  }
 
   const removeSubscription = (name: string) => {
-    removeSubscriptionFromAction(name);
-  };
+    removeSubscriptionFromAction(name)
+  }
 
   const getTotalCosts = () => {
     const yearlyTotal = subscriptions.reduce((total, sub) => {
-      return total + calculateYearlyCost(sub);
-    }, 0);
+      return total + calculateYearlyCost(sub)
+    }, 0)
 
     return {
       yearly: yearlyTotal,
       projection: yearlyTotal * projectionYears,
       monthly: yearlyTotal / 12,
-    };
-  };
+    }
+  }
 
   const getInsights = () => {
-    const totals = getTotalCosts();
-    const vacationCost = 3000; // Average vacation cost
-    const yearsForVacation = totals.yearly > 0 ? Math.ceil(
-      $cr(vacationCost, displayCurrency) / totals.yearly 
-    ) : 0;
+    const totals = getTotalCosts()
+    const vacationCost = 3000 // Average vacation cost
+    const yearsForVacation =
+      totals.yearly > 0
+        ? Math.ceil($cr(vacationCost, displayCurrency) / totals.yearly)
+        : 0
 
     return {
       vacationEquivalent: yearsForVacation,
       dailyCost: totals.yearly / 365,
-      coffeeEquivalent: totals.yearly > 0 ? Math.floor(totals.yearly / (($cr(3, displayCurrency)) * 365)) : 0, // $3 coffee
-    };
-  };
-
+      coffeeEquivalent:
+        totals.yearly > 0
+          ? Math.floor(totals.yearly / ($cr(3, displayCurrency) * 365))
+          : 0, // $3 coffee
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+    <div className="p-4">
       {/* Background Elements */}
       <div className={`absolute min-h-screen md:inset-0`}>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -183,13 +204,14 @@ const SubscriptionCalculator = () => {
       </div>
 
       <div className="relative max-w-6xl mx-auto">
-        {/* Header */}
+
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
-            <Calculator className="w-8 h-8 md:w-12 md:h-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">Subscription Cost Calculator</h1>
-          <p className="text-white/70">Discover the true lifetime cost of your subscriptions</p>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Subscription Cost Calculator
+          </h1>
+          <p className="text-white/70">
+            Discover the true lifetime cost of your subscriptions
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -204,10 +226,14 @@ const SubscriptionCalculator = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-white/90 text-sm mb-2 block">Display Currency</label>
+                  <label className="text-white/90 text-sm mb-2 block">
+                    Display Currency
+                  </label>
                   <select
                     value={displayCurrency}
-                    onChange={(e) => updateDisplayCurrency(e.target.value as Currency)}
+                    onChange={(e) =>
+                      updateDisplayCurrency(e.target.value as Currency)
+                    }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
                     <option value="USD">USD ($)</option>
@@ -225,7 +251,9 @@ const SubscriptionCalculator = () => {
                     min="1"
                     max="50"
                     value={projectionYears}
-                    onChange={(e) => setProjectionYears(parseInt(e.target.value))}
+                    onChange={(e) =>
+                      setProjectionYears(parseInt(e.target.value))
+                    }
                     className="w-full h-2 bg-white/20 rounded-lg appearance-none slider"
                   />
                   <div className="flex justify-between text-white/60 text-xs mt-1">
@@ -236,7 +264,7 @@ const SubscriptionCalculator = () => {
               </div>
             </div>
 
-            {/*SECTION: Popular Services */}
+            {/* SECTION: Popular Services */}
             <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
               <h3 className="text-white font-semibold mb-4 flex items-center">
                 <Plus className="w-5 h-5 mr-2" />
@@ -247,13 +275,14 @@ const SubscriptionCalculator = () => {
                 {popularServices.map((service, index) => (
                   <button
                     key={index}
-                    onClick={() => addSubscription(service)}
+                    onClick={() => addSubscriptionToAction(service)}
                     className="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white text-left hover:bg-white/20 transition-all duration-300 hover:scale-95"
                   >
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{service.name}</span>
                       <span className="text-sm text-white/80">
-                        {formatCurrency(service.price, service.currency)}/{service.period}
+                        {formatCurrency(service.price, service.currency)}/
+                        {service.period}
                       </span>
                     </div>
                   </button>
@@ -277,7 +306,9 @@ const SubscriptionCalculator = () => {
                     type="text"
                     placeholder="Service name"
                     value={newSub.name}
-                    onChange={(e) => setNewSub({ ...newSub, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewSub({ ...newSub, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
                   />
                   <div className="flex gap-2">
@@ -285,12 +316,19 @@ const SubscriptionCalculator = () => {
                       type="number"
                       placeholder="Price"
                       value={newSub.price}
-                      onChange={(e) => setNewSub({ ...newSub, price: e.target.value })}
+                      onChange={(e) =>
+                        setNewSub({ ...newSub, price: e.target.value })
+                      }
                       className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
                     />
                     <select
                       value={newSub.period}
-                      onChange={(e) => setNewSub({ ...newSub, period: e.target.value as 'monthly' | 'yearly' })}
+                      onChange={(e) =>
+                        setNewSub({
+                          ...newSub,
+                          period: e.target.value as 'monthly' | 'yearly',
+                        })
+                      }
                       className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                     >
                       {Object.entries(periods).map(([key, value]) => (
@@ -325,14 +363,21 @@ const SubscriptionCalculator = () => {
                     <span className="font-medium">Renewal Alerts</span>
                   </div>
                   {getExpiringDomains().map((domain) => {
-                    const daysLeft = getDaysUntilExpiry(domain.expiryDate);
+                    const daysLeft = getDaysUntilExpiry(domain.expiryDate)
                     return (
-                      <div key={domain.id} className="text-sm text-white/90 mb-1">
+                      <div
+                        key={domain.id}
+                        className="text-sm text-white/90 mb-1"
+                      >
                         <strong>{domain.name}</strong> expires in{' '}
-                        {daysLeft === 0 ? 'TODAY' : daysLeft === 1 ? 'TOMORROW' : `${daysLeft} days`}
+                        {daysLeft === 0
+                          ? 'TODAY'
+                          : daysLeft === 1
+                            ? 'TOMORROW'
+                            : `${daysLeft} days`}
                         {daysLeft === 1 && ' 🚨'}
                       </div>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -351,13 +396,17 @@ const SubscriptionCalculator = () => {
                     type="text"
                     placeholder="domain.com"
                     value={newDomain.name}
-                    onChange={(e) => setNewDomain({ ...newDomain, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewDomain({ ...newDomain, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                   <div className="flex flex-col gap-2">
                     <select
                       value={newDomain.provider}
-                      onChange={(e) => setNewDomain({ ...newDomain, provider: e.target.value })}
+                      onChange={(e) =>
+                        setNewDomain({ ...newDomain, provider: e.target.value })
+                      }
                       className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                       <option value="Cloudflare">Cloudflare</option>
@@ -370,14 +419,21 @@ const SubscriptionCalculator = () => {
                       type="number"
                       placeholder="Renewal cost"
                       value={newDomain.renewalCost}
-                      onChange={(e) => setNewDomain({ ...newDomain, renewalCost: e.target.value })}
+                      onChange={(e) =>
+                        setNewDomain({
+                          ...newDomain,
+                          renewalCost: e.target.value,
+                        })
+                      }
                       className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
                   <input
                     type="date"
                     value={newDomain.expiryDate}
-                    onChange={(e) => setNewDomain({ ...newDomain, expiryDate: e.target.value })}
+                    onChange={(e) =>
+                      setNewDomain({ ...newDomain, expiryDate: e.target.value })
+                    }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                   <div className="flex items-center">
@@ -385,10 +441,18 @@ const SubscriptionCalculator = () => {
                       type="checkbox"
                       id="autoRenewal"
                       checked={newDomain.autoRenewal}
-                      onChange={(e) => setNewDomain({ ...newDomain, autoRenewal: e.target.checked })}
+                      onChange={(e) =>
+                        setNewDomain({
+                          ...newDomain,
+                          autoRenewal: e.target.checked,
+                        })
+                      }
                       className="mr-2"
                     />
-                    <label htmlFor="autoRenewal" className="text-white/80 text-sm">
+                    <label
+                      htmlFor="autoRenewal"
+                      className="text-white/80 text-sm"
+                    >
                       Auto-renewal enabled
                     </label>
                   </div>
@@ -405,9 +469,9 @@ const SubscriptionCalculator = () => {
               {domains.length > 0 && (
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {domains.map((domain) => {
-                    const daysLeft = getDaysUntilExpiry(domain.expiryDate);
-                    const statusColor = getStatusColor(daysLeft);
-                    const statusBg = getStatusBg(daysLeft);
+                    const daysLeft = getDaysUntilExpiry(domain.expiryDate)
+                    const statusColor = getStatusColor(daysLeft)
+                    const statusBg = getStatusBg(daysLeft)
 
                     return (
                       <div
@@ -417,28 +481,38 @@ const SubscriptionCalculator = () => {
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-white font-medium">{domain.name}</h4>
+                              <h4 className="text-white font-medium">
+                                {domain.name}
+                              </h4>
                               {domain.autoRenewal && (
                                 <span className="text-xs bg-green-500/30 text-green-300 px-2 py-1 rounded-full">
                                   Auto
                                 </span>
                               )}
                             </div>
-                            <p className="text-white/60 text-sm">{domain.provider}</p>
+                            <p className="text-white/60 text-sm">
+                              {domain.provider}
+                            </p>
                             <div className="flex items-center gap-4 mt-2">
-                              <span className={`text-sm font-medium ${statusColor}`}>
+                              <span
+                                className={`text-sm font-medium ${statusColor}`}
+                              >
                                 <Clock className="w-3 h-3 inline mr-1" />
                                 {daysLeft < 0
                                   ? 'Expired'
                                   : daysLeft === 0
-                                  ? 'Expires Today!'
-                                  : daysLeft === 1
-                                  ? 'Expires Tomorrow!'
-                                  : `${daysLeft} days left`}
+                                    ? 'Expires Today!'
+                                    : daysLeft === 1
+                                      ? 'Expires Tomorrow!'
+                                      : `${daysLeft} days left`}
                               </span>
                               {domain.renewalCost > 0 && (
                                 <span className="text-white/60 text-sm">
-                                  {formatCurrency(parseFloat(domain.renewalCost), displayCurrency)}/year
+                                  {formatCurrency(
+                                    parseFloat(domain.renewalCost),
+                                    displayCurrency,
+                                  )}
+                                  /year
                                 </span>
                               )}
                             </div>
@@ -451,7 +525,7 @@ const SubscriptionCalculator = () => {
                           </button>
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -470,14 +544,20 @@ const SubscriptionCalculator = () => {
 
                 <div className="space-y-3">
                   {subscriptions.map((sub) => {
-                    const yearlyCost = calculateYearlyCost(sub);
+                    const yearlyCost = calculateYearlyCost(sub)
                     return (
-                      <div key={sub.name} className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                      <div
+                        key={sub.name}
+                        className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+                      >
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
-                            <h4 className="text-white font-medium">{sub.name}</h4>
+                            <h4 className="text-white font-medium">
+                              {sub.name}
+                            </h4>
                             <p className="text-white/60 text-sm">
-                              {formatCurrency(sub.price, sub.currency)} per {sub.period}
+                              {formatCurrency(sub.price, sub.currency)} per{' '}
+                              {sub.period}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -498,15 +578,24 @@ const SubscriptionCalculator = () => {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="text-center p-2 bg-white/10 rounded-lg">
                             <p className="text-white/60">Yearly Cost</p>
-                            <p className="text-white font-semibold">{formatCurrency(yearlyCost, displayCurrency)}</p>
+                            <p className="text-white font-semibold">
+                              {formatCurrency(yearlyCost, displayCurrency)}
+                            </p>
                           </div>
                           <div className="text-center p-2 bg-white/10 rounded-lg">
-                            <p className="text-white/60">{projectionYears}yr Total</p>
-                            <p className="text-white font-semibold">{formatCurrency(yearlyCost * projectionYears, displayCurrency)}</p>
+                            <p className="text-white/60">
+                              {projectionYears}yr Total
+                            </p>
+                            <p className="text-white font-semibold">
+                              {formatCurrency(
+                                yearlyCost * projectionYears,
+                                displayCurrency,
+                              )}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -523,15 +612,26 @@ const SubscriptionCalculator = () => {
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
                   <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                     <p className="text-white/80 text-sm mb-1">Monthly Total</p>
-                    <p className="text-2xl font-bold text-green-300">{formatCurrency(getTotalCosts().monthly, displayCurrency)}</p>
+                    <p className="text-2xl font-bold text-green-300">
+                      {formatCurrency(getTotalCosts().monthly, displayCurrency)}
+                    </p>
                   </div>
                   <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                     <p className="text-white/80 text-sm mb-1">Yearly Total</p>
-                    <p className="text-2xl font-bold text-blue-300">{formatCurrency(getTotalCosts().yearly, displayCurrency)}</p>
+                    <p className="text-2xl font-bold text-blue-300">
+                      {formatCurrency(getTotalCosts().yearly, displayCurrency)}
+                    </p>
                   </div>
                   <div className="text-center p-4 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl backdrop-blur-sm border border-white/20">
-                    <p className="text-white/80 text-sm mb-1">{projectionYears}-Year Total</p>
-                    <p className="text-3xl font-bold text-white">{formatCurrency(getTotalCosts().projection, displayCurrency)}</p>
+                    <p className="text-white/80 text-sm mb-1">
+                      {projectionYears}-Year Total
+                    </p>
+                    <p className="text-3xl font-bold text-white">
+                      {formatCurrency(
+                        getTotalCosts().projection,
+                        displayCurrency,
+                      )}
+                    </p>
                   </div>
                 </div>
 
@@ -543,14 +643,23 @@ const SubscriptionCalculator = () => {
                   </h4>
                   <div className="space-y-2 text-white/80">
                     <p>
-                      💰 You spend <strong>{formatCurrency(getInsights().dailyCost, displayCurrency)}</strong> per day on subscriptions
+                      💰 You spend{' '}
+                      <strong>
+                        {formatCurrency(
+                          getInsights().dailyCost,
+                          displayCurrency,
+                        )}
+                      </strong>{' '}
+                      per day on subscriptions
                     </p>
                     <p>
                       ✈️ Your subscriptions cost equals a vacation every{' '}
                       <strong>{getInsights().vacationEquivalent}</strong> years
                     </p>
                     <p>
-                      ☕ That's like buying <strong>{getInsights().coffeeEquivalent}</strong> coffees per day
+                      ☕ That's like buying{' '}
+                      <strong>{getInsights().coffeeEquivalent}</strong> coffees
+                      per day
                     </p>
                   </div>
                 </div>
@@ -561,8 +670,12 @@ const SubscriptionCalculator = () => {
             {subscriptions.length === 0 && (
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-12 shadow-xl text-center">
                 <PieChart className="w-16 h-16 text-white/40 mx-auto mb-4" />
-                <h3 className="text-white text-xl font-semibold mb-2">No Subscriptions Yet</h3>
-                <p className="text-white/70 mb-6">Add your first subscription to see the lifetime cost analysis</p>
+                <h3 className="text-white text-xl font-semibold mb-2">
+                  No Subscriptions Yet
+                </h3>
+                <p className="text-white/70 mb-6">
+                  Add your first subscription to see the lifetime cost analysis
+                </p>
                 <button
                   onClick={() => setShowAddForm(true)}
                   className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
@@ -575,6 +688,17 @@ const SubscriptionCalculator = () => {
         </div>
       </div>
 
+      {showDomainForm && (
+        <ModalUiWrapper>
+          <DomainForm
+            domain={newDomain} 
+            setDomain={(updatedDomain) => setNewDomain(updatedDomain)} 
+            onAdd={addDomain} 
+            onCancel={() => setShowDomainForm(false)} 
+          />
+        </ModalUiWrapper>
+      )}
+
       <EditSubscriptionModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -582,7 +706,7 @@ const SubscriptionCalculator = () => {
         onSave={handleSaveSubscription}
       />
     </div>
-  );
-};
+  )
+}
 
-export default SubscriptionCalculator;
+export default SubscriptionCalculator

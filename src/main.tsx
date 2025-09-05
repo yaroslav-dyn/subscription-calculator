@@ -7,7 +7,9 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+// import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
 import TanStackQueryDemo from './routes/demo.tanstack-query.tsx'
 import StoreDemo from './routes/demo.store.tsx'
 
@@ -20,26 +22,28 @@ import reportWebVitals from './reportWebVitals.ts'
 
 import App from './App.tsx'
 import SubscriptionCalculator from './components/SubscriptionCalculator'
+import NotFound from './components/404'
 
 const rootRoute = createRootRoute({
   component: () => (
-    <>
-      {/* <Header /> */}
+    <div className="base__page-bg min-h-screen">
+      <Header />
       <Outlet />
       {/* <TanStackRouterDevtools /> */}
-    </>
+    </div>
   ),
+  notFoundComponent: () => <NotFound />,
 })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: '/demo',
   component: App,
 })
 
 const CalculatorRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/calculator',
+  path: '/',
   component: SubscriptionCalculator,
 })
 
