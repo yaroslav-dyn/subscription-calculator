@@ -1,7 +1,7 @@
-import type { IDomain } from '@/lib/utils'
+import { type IDomain,Types } from '@/lib/utils'
 import { Store } from '@tanstack/store'
 
-export type TCurrency = 'USD' | 'EUR' | 'UAH'
+export type TCurrency = Types.CurrencyValue
 
 // Define the shape of a subscription
 export interface ISubscription {
@@ -158,8 +158,8 @@ export const addDomain = () => {
   subscriptionStore.setState((state) => {
     const newDomain = {
       ...state.newDomain,
-      id: new String(Date.now() + Math.random()),
-      renewalCost: parseFloat(state.newDomain.renewalCost) || 0,
+      id: (Date.now() + Math.random()).toString(),
+      renewalCost: state.newDomain.renewalCost || '0',
     }
     return {
       ...state,

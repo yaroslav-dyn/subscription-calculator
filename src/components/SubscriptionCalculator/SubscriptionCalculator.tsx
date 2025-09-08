@@ -28,7 +28,7 @@ import {
   removeDomain as removeDomainFromAction,
   setNewDomain,
 } from '@/store/subscriptionStore'
-import { useCalculatorUtils, useDomainUtils } from '@/lib/utils'
+import { useCalculatorUtils, useDomainUtils, Types } from '@/lib/utils'
 
 const SubscriptionCalculator = () => {
   const {
@@ -60,7 +60,7 @@ const SubscriptionCalculator = () => {
     name: '',
     price: '',
     period: 'monthly' as 'monthly' | 'yearly',
-    currency: 'USD' as TCurrency,
+    currency: 'USD' as Types.CurrencyValue,
   })
 
   useEffect(() => {
@@ -181,9 +181,12 @@ const SubscriptionCalculator = () => {
                     }
                     className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
-                    <option value="USD">USD ($)</option>
+                    {Types.AvailableCurrencies.map((curr)=> 
+                      <option key={curr} value={curr}>{curr}</option>
+                    )}
+                    {/* <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
-                    <option value="UAH">UAH (₴)</option>
+                    <option value="UAH">UAH (₴)</option> */}
                   </select>
                 </div>
 
@@ -376,7 +379,7 @@ const SubscriptionCalculator = () => {
                                       ? 'Expires Tomorrow!'
                                       : `${daysLeft} days left`}
                               </span>
-                              {domain.renewalCost > 0 && (
+                              {parseFloat(domain.renewalCost) > 0 && (
                                 <span className="text-white/60 text-sm">
                                   {formatCurrency(
                                     parseFloat(domain.renewalCost),
