@@ -18,6 +18,7 @@ interface SubscriptionStoreState {
   domains: Array<IDomain>
   displayCurrency: TCurrency
   newDomain: IDomain
+  settingsPanelStatus: boolean
 }
 
 // A list of popular services that can be used as suggestions
@@ -54,6 +55,7 @@ const defaultState: SubscriptionStoreState = {
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
+  settingsPanelStatus: false
 }
 
 // Function to safely get the initial state from localStorage
@@ -137,6 +139,13 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   subscriptionStore.setState((state) => ({
     ...state,
     displayCurrency: currency,
+  }))
+}
+
+export const updateSettingsPanelStatus = (status: boolean) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    settingsPanelStatus: status,
   }))
 }
 

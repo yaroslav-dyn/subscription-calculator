@@ -2,27 +2,30 @@ import { useStore } from '@tanstack/react-store'
 import {
   BarChart3,
   Edit,
+  Settings,
   Trash2,
 } from 'lucide-react'
-import type {ISubscription} from '@/store/subscriptionStore';
+import type { ISubscription } from '@/store/subscriptionStore';
 import { useCalculatorUtils } from '@/lib/utils'
 import {
-  
+
   subscriptionStore
 } from '@/store/subscriptionStore'
 
 interface ISubscriptions {
   projectionYears: number
+  triggerSettingshandler: () => void
   editSubscription: (sub: ISubscription) => void
   removeSubscription: (name: string) => void
 }
 
 const Subscriptions = ({
   projectionYears,
+  triggerSettingshandler,
   editSubscription,
   removeSubscription,
 }: ISubscriptions) => {
-  const { formatCurrency, calculateYearlyCost  } = useCalculatorUtils()
+  const { formatCurrency, calculateYearlyCost } = useCalculatorUtils()
 
   const { subscriptions, displayCurrency } = useStore(
     subscriptionStore,
@@ -34,10 +37,13 @@ const Subscriptions = ({
       {/* Current Subscriptions */}
       {subscriptions.length > 0 && (
         <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-white font-semibold mb-4 flex items-center">
-            <BarChart3 className="w-5 h-5 mr-2" />
-            Your Subscriptions
-          </h3>
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className="text-white font-semibold flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Your Subscriptions
+            </h3>
+            <Settings onClick={triggerSettingshandler} className='text-white cursor-pointer' />
+          </div>
 
           <div className="space-y-3">
             {subscriptions.map((sub) => {

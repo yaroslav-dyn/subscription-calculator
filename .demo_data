@@ -77,6 +77,14 @@
             "renewalCost": "10.46",
             "autoRenewal": true,
             "id": "1757325479962.116"
+        },
+        {
+            "name": "https://word-synergy.com/",
+            "provider": "Namecheap",
+            "expiryDate": "2026-07-02",
+            "renewalCost": "11.48",
+            "autoRenewal": false,
+            "id": "1757346550714.5496"
         }
     ],
     "displayCurrency": "UAH",
@@ -86,5 +94,6 @@
         "expiryDate": "",
         "renewalCost": "",
         "autoRenewal": false
-    }
+    },
+    "settingsPanelStatus": true
 }
