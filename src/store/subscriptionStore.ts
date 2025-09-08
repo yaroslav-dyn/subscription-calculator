@@ -1,5 +1,5 @@
-import { type IDomain,Types } from '@/lib/utils'
 import { Store } from '@tanstack/store'
+import { type IDomain, Types  } from '@/lib/utils';
 
 export type TCurrency = Types.CurrencyValue
 

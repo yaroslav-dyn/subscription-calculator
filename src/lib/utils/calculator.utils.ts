@@ -1,4 +1,4 @@
-import type { TCurrency } from '@/store/subscriptionStore'
+import type { ISubscription, TCurrency } from '@/store/subscriptionStore'
 
 const periods = {
   weekly: { multiplier: 52, label: 'Weekly' },
@@ -28,6 +28,11 @@ const currencies: Record<string, CurrencyInfo> = {
  * field: rates => conversion_rates
  * and add other currencies
  **/
+
+// NOTE: Convert sum to current currency equivalent
+const convertSumWithCurrencyRate = (sum: number, currencyCode: TCurrency) =>
+  sum / currencies[currencyCode].rate
+
 const getAPIRates = async () => {
   try {
     const response = await fetch(
@@ -49,6 +54,63 @@ const getAPIRates = async () => {
     }
   }
 } //
+const calculateYearlyCost = (
+  sub: ISubscription,
+  displayCurrency: TCurrency,
+) => {
+  // Convert subscription price to the base currency (USD)
+  const priceInBaseCurrency = sub.price * currencies[sub.currency].rate
+  // Convert from base currency to the selected display currency
+  const priceInDisplayCurrency =
+    priceInBaseCurrency / currencies[displayCurrency].rate
+  return priceInDisplayCurrency * periods[sub.period].multiplier
+}
+
+const getTotalCosts = (
+  subscriptionsArray: Array<ISubscription>,
+  displayCurrency: TCurrency,
+  projectionYears: number,
+) => {
+  const yearlyTotal =
+    subscriptionsArray &&
+    subscriptionsArray.reduce((total, sub) => {
+      return total + calculateYearlyCost(sub, displayCurrency)
+    }, 0)
+
+  return {
+    yearly: yearlyTotal,
+    projection: yearlyTotal * projectionYears,
+    monthly: yearlyTotal / 12,
+  }
+}
+
+const getInsights = (
+  subscriptions: Array<ISubscription>,
+  displayCurrency: TCurrency,
+  projectionYears: number,
+) => {
+  const totals = getTotalCosts(subscriptions, displayCurrency, projectionYears)
+  const vacationCost = 3000 // Average vacation cost
+  const yearsForVacation =
+    totals.yearly > 0
+      ? Math.ceil(
+          convertSumWithCurrencyRate(vacationCost, displayCurrency) /
+            totals.yearly,
+        )
+      : 0
+
+  return {
+    vacationEquivalent: yearsForVacation,
+    dailyCost: totals.yearly / 365,
+    coffeeEquivalent:
+      totals.yearly > 0
+        ? Math.floor(
+            totals.yearly /
+              (convertSumWithCurrencyRate(3, displayCurrency) * 365),
+          )
+        : 0, // $3 coffee
+  }
+}
 
 export const useCalculatorUtils = () => {
   const formatCurrency = (amount: number, currencyCode: TCurrency) => {
@@ -56,15 +118,14 @@ export const useCalculatorUtils = () => {
     return `${symbol}${amount.toFixed(2)}`
   }
 
-  // NOTE: Convert sum to current currency equivalent
-  const convertSumWithCurrencyRate = (sum: number, currencyCode: TCurrency) =>
-    sum / currencies[currencyCode].rate
-
   return {
     periods,
     currencies,
     formatCurrency,
     getAPIRates,
     $cr: convertSumWithCurrencyRate,
+    calculateYearlyCost,
+    getTotalCosts,
+    getInsights,
   }
 }

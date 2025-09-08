@@ -1,7 +1,7 @@
 import React from 'react'
 import { X } from 'lucide-react'
 import type { ISubscription } from '@/store/subscriptionStore'
-import { Types } from '@/lib/utils'
+import type { Types } from '@/lib/utils'
 
 interface EditSubscriptionModalProps {
   isOpen: boolean
