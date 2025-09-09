@@ -1,4 +1,4 @@
-import type { ISubscription, TCurrency } from '@/store/subscriptionStore'
+import { Types } from '@/lib/utils'
 
 const periods = {
   weekly: { multiplier: 52, label: 'Weekly' },
@@ -8,7 +8,7 @@ const periods = {
   yearly: { multiplier: 1, label: 'Yearly' },
 }
 
-type CurrencyInfo = {
+export type CurrencyInfo = {
   symbol: string
   rate: number
 }
@@ -30,7 +30,7 @@ const currencies: Record<string, CurrencyInfo> = {
  **/
 
 // NOTE: Convert sum to current currency equivalent
-const convertSumWithCurrencyRate = (sum: number, currencyCode: TCurrency) =>
+const convertSumWithCurrencyRate = (sum: number, currencyCode: Types.CurrencyValue) =>
   sum / currencies[currencyCode].rate
 
 const getAPIRates = async () => {
@@ -46,6 +46,7 @@ const getAPIRates = async () => {
         currencies[key].rate = Number(1 / currencyRate)
       }
     }
+    return currencies
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'message' in error) {
       console.error('Error while getting rates from API', error?.message)
@@ -54,9 +55,10 @@ const getAPIRates = async () => {
     }
   }
 } //
+
 const calculateYearlyCost = (
-  sub: ISubscription,
-  displayCurrency: TCurrency,
+  sub: Types.ISubscription,
+  displayCurrency: Types.CurrencyValue,
 ) => {
   // Convert subscription price to the base currency (USD)
   const priceInBaseCurrency = sub.price * currencies[sub.currency].rate
@@ -67,8 +69,8 @@ const calculateYearlyCost = (
 }
 
 const getTotalCosts = (
-  subscriptionsArray: Array<ISubscription>,
-  displayCurrency: TCurrency,
+  subscriptionsArray: Array<Types.ISubscription>,
+  displayCurrency: Types.CurrencyValue,
   projectionYears: number,
 ) => {
   const yearlyTotal =
@@ -85,8 +87,8 @@ const getTotalCosts = (
 }
 
 const getInsights = (
-  subscriptions: Array<ISubscription>,
-  displayCurrency: TCurrency,
+  subscriptions: Array<Types.ISubscription>,
+  displayCurrency: Types.CurrencyValue,
   projectionYears: number,
 ) => {
   const totals = getTotalCosts(subscriptions, displayCurrency, projectionYears)
@@ -113,7 +115,7 @@ const getInsights = (
 }
 
 export const useCalculatorUtils = () => {
-  const formatCurrency = (amount: number, currencyCode: TCurrency) => {
+  const formatCurrency = (amount: number, currencyCode: Types.CurrencyValue) => {
     const symbol = currencies[currencyCode].symbol
     return `${symbol}${amount.toFixed(2)}`
   }

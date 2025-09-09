@@ -1,15 +1,9 @@
 import { Store } from '@tanstack/store'
-import { type IDomain, Types  } from '@/lib/utils';
+import { type IDomain, Types } from '@/lib/utils';
+import type { ISubscription } from '@/lib/utils/types'
+import { popularServices } from '@/lib/utils/constants'
 
 export type TCurrency = Types.CurrencyValue
-
-// Define the shape of a subscription
-export interface ISubscription {
-  name: string
-  price: number
-  period: 'monthly' | 'yearly'
-  currency: TCurrency
-}
 
 // Define the shape of the store's state
 interface SubscriptionStoreState {
@@ -19,26 +13,9 @@ interface SubscriptionStoreState {
   displayCurrency: TCurrency
   newDomain: IDomain
   settingsPanelStatus: boolean
+  showRatesStatus: boolean
+  showDomainStatus: boolean
 }
-
-// A list of popular services that can be used as suggestions
-const popularServices: Array<ISubscription> = [
-  { name: 'Netflix', price: 15.49, period: 'monthly', currency: 'USD' },
-  { name: 'Spotify', price: 10.99, period: 'monthly', currency: 'USD' },
-  { name: 'Disney+', price: 7.99, period: 'monthly', currency: 'USD' },
-  { name: 'Amazon Prime', price: 139, period: 'yearly', currency: 'USD' },
-  { name: 'Apple Music', price: 10.99, period: 'monthly', currency: 'USD' },
-  { name: 'YouTube Premium', price: 13.99, period: 'monthly', currency: 'USD' },
-  {
-    name: 'Adobe Creative Cloud',
-    price: 52.99,
-    period: 'monthly',
-    currency: 'USD',
-  },
-  { name: 'Microsoft 365', price: 69.99, period: 'yearly', currency: 'USD' },
-  { name: 'Dropbox', price: 9.99, period: 'monthly', currency: 'USD' },
-  { name: 'Canva Pro', price: 119.99, period: 'yearly', currency: 'USD' },
-]
 
 const initialDomainState: IDomain = {
   name: '',
@@ -55,7 +32,9 @@ const defaultState: SubscriptionStoreState = {
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
-  settingsPanelStatus: false
+  settingsPanelStatus: true,
+  showRatesStatus: false,
+  showDomainStatus: false,
 }
 
 // Function to safely get the initial state from localStorage
@@ -142,6 +121,7 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   }))
 }
 
+// SECTION: Panels showing status
 export const updateSettingsPanelStatus = (status: boolean) => {
   subscriptionStore.setState((state) => ({
     ...state,
@@ -149,6 +129,21 @@ export const updateSettingsPanelStatus = (status: boolean) => {
   }))
 }
 
+export const updateShowRatesStatus = (status: boolean) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    showRatesStatus: status,
+  }))
+}
+
+export const updateShowDomainStatus = (status: boolean) => {
+  subscriptionStore.setState((state) => ({
+    ...state,
+    showDomainStatus: status,
+  }))
+}
+
+// SECTION: Domains
 /**
  * Sets the new domain form state.
  * @param domain The new domain state.
@@ -159,7 +154,6 @@ export const setNewDomain = (domain: IDomain) => {
     newDomain: domain,
   }))
 }
-
 /**
  * Adds a new domain to the user's list.
  */

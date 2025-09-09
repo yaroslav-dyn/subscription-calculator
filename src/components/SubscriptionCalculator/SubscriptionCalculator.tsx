@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Plus, Settings, Target } from 'lucide-react'
+import { Banknote, Globe, Plus, Settings, Target } from 'lucide-react'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
-import DomainForm from './DomainForm'
-import Subscriptions from './components/Subscriptions'
-import type { ISubscription } from '@/store/subscriptionStore'
+import DomainForm from './components/DomainSubscriptions/DomainForm'
+import SummaryBySubscriptions from './components/SummaryBySubscriptions'
+import DomainSubscriptions from './components/DomainSubscriptions'
+import type { ISubscription } from '@/lib/utils/types'
+import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
+import Subscriptions, { CustomSubscriptionForm } from '@/components/SubscriptionCalculator/components/Subscriptions'
 import {
   addDomain as addDomainToAction,
   addSubscription as addSubscriptionToAction,
@@ -16,50 +19,47 @@ import {
   subscriptionStore,
   updateDisplayCurrency,
   updateSettingsPanelStatus,
+  updateShowDomainStatus,
+  updateShowRatesStatus,
   updateSubscription as updateSubscriptionAction,
 } from '@/store/subscriptionStore'
 import { Types, useCalculatorUtils } from '@/lib/utils'
-import SummaryBySubscriptions from './components/SummaryBySubscriptions'
-import DomainSubscriptions from './components/DomainSubscriptions'
+import RatesElement from '@/components/RatesElement'
 
 const SubscriptionCalculator = () => {
-  const { popularServices, settingsPanelStatus, displayCurrency, newDomain } = useStore(
-    subscriptionStore,
-    (state) => state,
-  )
-  // SECTION: HOOKS
-  const { periods, formatCurrency, getAPIRates } = useCalculatorUtils()
+  // NOTE: STORE
+  const {
+    popularServices,
+    settingsPanelStatus,
+    showRatesStatus,
+    showDomainStatus,
+    displayCurrency,
+    newDomain,
+  } = useStore(subscriptionStore, (state) => state)
 
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [showDomainForm, setShowDomainForm] = useState(false)
+  // NOTE: HOOKS
+  const { formatCurrency, getAPIRates } = useCalculatorUtils()
+
+  const [showAddForm, setShowAddForm] = useState<boolean>(false)
+  const [showDomainForm, setShowDomainForm] = useState<boolean>(false)
   const [projectionYears, setProjectionYears] = useState(5)
+  const [currentRates, setCurrentRates] = useState<
+    Record<string, CurrencyInfo> | undefined
+  >(undefined)
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [editingSubscription, setEditingSubscription] =
     useState<ISubscription | null>(null)
 
-  const [newSub, setNewSub] = useState({
-    name: '',
-    price: '',
-    period: 'monthly' as 'monthly' | 'yearly',
-    currency: 'USD' as Types.CurrencyValue,
-  })
 
   useEffect(() => {
-    getAPIRates()
+    const updateRates = async () => {
+      const res = await getAPIRates()
+      setCurrentRates(res)
+    }
+    updateRates()
   }, [])
 
-  const addCustomSubscription = () => {
-    if (newSub.name && newSub.price) {
-      addSubscriptionToAction({
-        ...newSub,
-        price: parseFloat(newSub.price),
-        currency: displayCurrency,
-      })
-      setNewSub({ name: '', price: '', period: 'monthly', currency: 'USD' })
-      setShowAddForm(false)
-    }
-  }
 
   const handleEditClick = (sub: ISubscription) => {
     setEditingSubscription(sub)
@@ -82,9 +82,17 @@ const SubscriptionCalculator = () => {
   const removeSubscription = (name: string) => {
     removeSubscriptionFromAction(name)
   }
+
   const triggerSettingsPanel = () => {
-    // setSettingsPanelOpen((status) => status = !status)
     updateSettingsPanelStatus(!settingsPanelStatus)
+  }
+
+  const triggerRatesPanel = () => {
+    updateShowRatesStatus(!showRatesStatus)
+  }
+
+  const triggerDomainPanel = () => {
+    updateShowDomainStatus(!showDomainStatus)
   }
 
   return (
@@ -96,13 +104,27 @@ const SubscriptionCalculator = () => {
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
       </div>
 
-      <div className='flex flex-row-reverse fixed z-50 top-4 right-4'>
-        <Settings 
-          size={36}
-          onClick={triggerSettingsPanel} 
-          fill="#8d5ca9"
-          fillOpacity={!settingsPanelStatus ? '0.5' : '1'}
-          className='text-white cursor-pointer' />
+      <div className="flex flex-row md:flex-row items-center gap-4 md:gap-4 fixed z-50 top-2 md:top-4 right-2 md:right-4">
+        <Settings
+          size={30}
+          onClick={triggerSettingsPanel}
+          opacity={!settingsPanelStatus ? '0.5' : '1'}
+          className="text-white cursor-pointer hover:opacity-100"
+        />
+
+        <Banknote
+          size={34}
+          onClick={triggerRatesPanel}
+          opacity={!showRatesStatus ? '0.5' : '1'}
+          className="text-white cursor-pointer hover:opacity-100"
+        />
+
+        <Globe
+          size={26}
+          onClick={triggerDomainPanel}
+          opacity={!showDomainStatus ? '0.5' : '1'}
+          className="text-white cursor-pointer hover:opacity-100"
+        />
       </div>
 
       <section className="relative max-w-6xl mx-auto">
@@ -116,13 +138,13 @@ const SubscriptionCalculator = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Controls */}
+
+          {/* SECTION: Left Column - Controls */}
           {settingsPanelStatus && (
             <div className={`lg:col-span-1 space-y-6`}>
               {/* Currency & Projection Settings */}
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
-
-                <div className='flex items-center justify-between'>
+                <div className="flex items-center justify-between">
                   <h3 className="text-white font-semibold mb-4 flex items-center">
                     <Target className="w-5 h-5 mr-2" />
                     Settings
@@ -130,16 +152,13 @@ const SubscriptionCalculator = () => {
                 </div>
 
                 <div className="space-y-4">
-
                   <div>
                     <label className="text-white/90 text-sm mb-2 block">
                       Display Currency
                     </label>
                     <select
                       value={displayCurrency}
-                      onChange={(e) =>
-                        updateDisplayCurrency(e.target.value)
-                      }
+                      onChange={(e) => updateDisplayCurrency(e.target.value)}
                       className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
                     >
                       {Types.AvailableCurrencies.map((curr) => (
@@ -173,7 +192,6 @@ const SubscriptionCalculator = () => {
               </div>
 
               {/* SECTION: Popular Services */}
-
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
                 <h3 className="text-white font-semibold mb-4 flex items-center">
                   <Plus className="w-5 h-5 mr-2" />
@@ -209,52 +227,6 @@ const SubscriptionCalculator = () => {
                   Add Custom subscription
                 </button>
 
-                {showAddForm && (
-                  <div className="mt-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Service name"
-                      value={newSub.name}
-                      onChange={(e) =>
-                        setNewSub({ ...newSub, name: e.target.value })
-                      }
-                      className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                    />
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        value={newSub.price}
-                        onChange={(e) =>
-                          setNewSub({ ...newSub, price: e.target.value })
-                        }
-                        className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      />
-                      <select
-                        value={newSub.period}
-                        onChange={(e) =>
-                          setNewSub({
-                            ...newSub,
-                            period: e.target.value as 'monthly' | 'yearly',
-                          })
-                        }
-                        className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      >
-                        {Object.entries(periods).map(([key, value]) => (
-                          <option key={key} value={key}>
-                            {value.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <button
-                      onClick={addCustomSubscription}
-                      className="w-full p-2 bg-green-500/30 rounded-xl text-white hover:bg-green-500/40 transition-all duration-300"
-                    >
-                      Add subscription
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* SECTION: Domain Renewal Tracker */}
@@ -268,49 +240,64 @@ const SubscriptionCalculator = () => {
           )}
 
           {/* SECTION: Right Column - Results */}
-          <div className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
+          <div
+            className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}
+          >
+            {showRatesStatus && currentRates && (
+              <RatesElement currentRates={currentRates} />
+            )}
+
             <Subscriptions
-              triggerSettingshandler={triggerSettingsPanel}
+              triggerSettingshandler={() => setShowAddForm(true)}
               projectionYears={projectionYears}
               editSubscription={handleEditClick}
               removeSubscription={removeSubscription}
             />
 
-            <DomainSubscriptions
-              hideAddButton={true}
-              domainModalHandler={() => setShowDomainForm(!showDomainForm)}
-              removeDomainhandler={removeDomainFromAction}
-            />
+            {showDomainStatus &&
+              (<DomainSubscriptions
+                hideAddButton={true}
+                domainModalHandler={() => setShowDomainForm(!showDomainForm)}
+                removeDomainhandler={removeDomainFromAction}
+                triggerDomainModal={() => setShowDomainForm(true)}
+              />)
+            }
 
             <SummaryBySubscriptions
               projectionYears={projectionYears}
               showAddFormhandler={() => setShowAddForm(true)}
             />
-
           </div>
         </div>
       </section>
 
-      {/* SECTION: Domain Renewals modal  */}
-      {showDomainForm && (
-        <ModalUiWrapper>
-          <DomainForm
-            domain={newDomain}
-            setDomain={setNewDomain}
-            onAdd={handleAddDomain}
-            onCancel={() => setShowDomainForm(false)}
-          />
-        </ModalUiWrapper>
-      )}
+      {/* SECTION: Custom Subscription modal */}
+      <ModalUiWrapper isOpen={showAddForm}>
+        <CustomSubscriptionForm
+          onCancel={() => setShowAddForm(false)}
+        />
+      </ModalUiWrapper>
 
+      {/* SECTION: Domain Renewals modal  */}
+      <ModalUiWrapper isOpen={showDomainForm}>
+        <DomainForm
+          domain={newDomain}
+          setDomain={setNewDomain}
+          onAdd={handleAddDomain}
+          onCancel={() => setShowDomainForm(false)}
+        />
+      </ModalUiWrapper>
+
+      {/* SECTION: Edit Subscriptiom modal  */}
       <EditSubscriptionModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         subscription={editingSubscription}
         onSave={handleSaveSubscription}
       />
+
     </div>
   )
-}
+}//
 
 export default SubscriptionCalculator

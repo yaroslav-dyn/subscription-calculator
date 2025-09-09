@@ -15,6 +15,7 @@ const DomainForm: React.FC<DomainFormProps> = ({
   onAdd,
   onCancel,
 }) => {
+
   return (
     <div className="space-y-3 mb-4">
       <h3 className="text-white font-semibold mb-4 flex items-center">

@@ -3,7 +3,7 @@ import { Calculator } from 'lucide-react'
 
 export default function Header() {
   return (
-    <header className="mx-auto py-4">
+    <header className="mx-auto pt-12">
       {/* <nav className="flex flex-row">
         <div className="px-2 font-bold">
           <Link to="/">Home</Link>

@@ -1,3 +1,3 @@
-import SummaryBySubscriptions from './SummaryBySubscriptions';
+import SummaryBySubscriptions from './SummaryBySubscriptions'
 
-export default SummaryBySubscriptions;
+export default SummaryBySubscriptions

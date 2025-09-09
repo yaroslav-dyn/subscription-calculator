@@ -1,3 +1,3 @@
-import DomainSubscriptions from './DomainSubscriptions';
+import DomainSubscriptions from './DomainSubscriptions'
 
-export default DomainSubscriptions;
+export default DomainSubscriptions

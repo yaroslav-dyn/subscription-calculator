@@ -1,25 +1,26 @@
-import { useCalculatorUtils, useDomainUtils, type IDomain } from '@/lib/utils';
-import { subscriptionStore } from '@/store/subscriptionStore';
-import { useStore } from '@tanstack/react-store';
-import { Bell, Clock, Globe, Plus, Trash2 } from 'lucide-react';
+import { useStore } from '@tanstack/react-store'
+import { Bell, Clock, Globe, Plus, Trash2 } from 'lucide-react'
+import { useCalculatorUtils, useDomainUtils } from '@/lib/utils'
+import { subscriptionStore } from '@/store/subscriptionStore'
 
 interface IDomainSubscriptions {
   hideAddButton: boolean
   domainModalHandler: () => void
   removeDomainhandler: (name: string) => void
+  triggerDomainModal: () => void
 }
 
-const DomainSubscriptions = ({ 
+const DomainSubscriptions = ({
   hideAddButton,
   domainModalHandler,
-  removeDomainhandler
+  removeDomainhandler,
+  triggerDomainModal
 }: IDomainSubscriptions) => {
-
   const {
     getDaysUntilExpiry,
     getExpiringDomains,
     getStatusColor,
-    getStatusBg
+    getStatusBg,
   } = useDomainUtils()
 
   const { displayCurrency, domains } = useStore(
@@ -27,15 +28,23 @@ const DomainSubscriptions = ({
     (state) => state,
   )
 
-    const { formatCurrency } = useCalculatorUtils()
-
+  const { formatCurrency } = useCalculatorUtils()
 
   return (
     <div className="DomainSubscriptions-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
-      <h3 className="text-white font-semibold mb-4 flex items-center">
-        <Globe className="w-5 h-5 mr-2" />
-        Domain Renewals
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-white font-semibold flex items-center">
+          <Globe className="w-5 h-5 mr-2" />
+          Domain Renewals
+        </h3>
+        {hideAddButton && (
+          <Plus
+            strokeWidth="2"
+            onClick={triggerDomainModal}
+            className="text-white cursor-pointer"
+          />
+        )}
+      </div>
 
       {/* NOTE: Expiring Domains Alert */}
       {getExpiringDomains(domains).length > 0 && (
@@ -47,10 +56,7 @@ const DomainSubscriptions = ({
           {getExpiringDomains(domains).map((domain) => {
             const daysLeft = getDaysUntilExpiry(domain.expiryDate)
             return (
-              <div
-                key={domain.id}
-                className="text-sm text-white/90 mb-1"
-              >
+              <div key={domain.id} className="text-sm text-white/90 mb-1">
                 <strong>{domain.name}</strong> expires in{' '}
                 {daysLeft === 0
                   ? 'TODAY'
@@ -70,10 +76,10 @@ const DomainSubscriptions = ({
           className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-blue-500/30 to-teal-500/30 rounded-xl text-white hover:from-blue-500/40 hover:to-teal-500/40 transition-all duration-300 mb-4"
         >
           <Plus className="w-5 h-5 mr-2" />
-        Add Domain
+          Add Domain
         </button>
       )}
-      
+
       {/* NOTE: Domain List */}
       {hideAddButton && domains.length > 0 && (
         <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -90,22 +96,16 @@ const DomainSubscriptions = ({
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-white font-medium">
-                        {domain.name}
-                      </h4>
+                      <h4 className="text-white font-medium">{domain.name}</h4>
                       {domain.autoRenewal && (
                         <span className="text-xs bg-green-500/30 text-green-300 px-2 py-1 rounded-full">
                           Auto
                         </span>
                       )}
                     </div>
-                    <p className="text-white/60 text-sm">
-                      {domain.provider}
-                    </p>
+                    <p className="text-white/60 text-sm">{domain.provider}</p>
                     <div className="flex items-center gap-4 mt-2">
-                      <span
-                        className={`text-sm font-medium ${statusColor}`}
-                      >
+                      <span className={`text-sm font-medium ${statusColor}`}>
                         <Clock className="w-3 h-3 inline mr-1" />
                         {daysLeft < 0
                           ? 'Expired'
@@ -127,9 +127,7 @@ const DomainSubscriptions = ({
                     </div>
                   </div>
                   <button
-                    onClick={() =>
-                      removeDomainhandler(domain.id as string)
-                    }
+                    onClick={() => removeDomainhandler(domain.id as string)}
                     className="p-1 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -144,4 +142,4 @@ const DomainSubscriptions = ({
   )
 }
 
-export default DomainSubscriptions;
+export default DomainSubscriptions

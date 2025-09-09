@@ -26,11 +26,11 @@ import NotFound from './components/404'
 
 const rootRoute = createRootRoute({
   component: () => (
-    <div className="base__page-bg min-h-screen">
+    <main className="base__page-bg min-h-screen">
       <Header />
       <Outlet />
       {/* <TanStackRouterDevtools /> */}
-    </div>
+    </main>
   ),
   notFoundComponent: () => <NotFound />,
 })

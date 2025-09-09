@@ -1,21 +1,17 @@
-import { useCalculatorUtils } from '@/lib/utils';
-import { subscriptionStore } from '@/store/subscriptionStore';
-import { useStore } from '@tanstack/react-store';
-import { AlertCircle, PieChart, TrendingUp } from 'lucide-react';
+import { useStore } from '@tanstack/react-store'
+import { AlertCircle, PieChart, TrendingUp } from 'lucide-react'
+import { useCalculatorUtils } from '@/lib/utils'
+import { subscriptionStore } from '@/store/subscriptionStore'
 
 interface ISummaryBySubscriptions {
   projectionYears: number
   showAddFormhandler: (status: boolean) => void
 }
 
-const SummaryBySubscriptions = (
-  {
-    projectionYears,
-    showAddFormhandler
-  }:
-    ISummaryBySubscriptions
-) => {
-
+const SummaryBySubscriptions = ({
+  projectionYears,
+  showAddFormhandler,
+}: ISummaryBySubscriptions) => {
   const { formatCurrency, getTotalCosts, getInsights } = useCalculatorUtils()
 
   const { subscriptions, displayCurrency } = useStore(
@@ -39,8 +35,11 @@ const SummaryBySubscriptions = (
                 <p className="text-white/80 text-sm mb-1">Monthly Total</p>
                 <p className="text-2xl font-bold text-green-300">
                   {formatCurrency(
-                    getTotalCosts(subscriptions, displayCurrency, projectionYears)
-                      .monthly,
+                    getTotalCosts(
+                      subscriptions,
+                      displayCurrency,
+                      projectionYears,
+                    ).monthly,
                     displayCurrency,
                   )}
                 </p>
@@ -49,8 +48,11 @@ const SummaryBySubscriptions = (
                 <p className="text-white/80 text-sm mb-1">Yearly Total</p>
                 <p className="text-2xl font-bold text-blue-300">
                   {formatCurrency(
-                    getTotalCosts(subscriptions, displayCurrency, projectionYears)
-                      .yearly,
+                    getTotalCosts(
+                      subscriptions,
+                      displayCurrency,
+                      projectionYears,
+                    ).yearly,
                     displayCurrency,
                   )}
                 </p>
@@ -61,8 +63,11 @@ const SummaryBySubscriptions = (
                 </p>
                 <p className="text-3xl font-bold text-white">
                   {formatCurrency(
-                    getTotalCosts(subscriptions, displayCurrency, projectionYears)
-                      .projection,
+                    getTotalCosts(
+                      subscriptions,
+                      displayCurrency,
+                      projectionYears,
+                    ).projection,
                     displayCurrency,
                   )}
                 </p>
@@ -80,8 +85,11 @@ const SummaryBySubscriptions = (
                   💰 You spend{' '}
                   <strong>
                     {formatCurrency(
-                      getInsights(subscriptions, displayCurrency, projectionYears)
-                        .dailyCost,
+                      getInsights(
+                        subscriptions,
+                        displayCurrency,
+                        projectionYears,
+                      ).dailyCost,
                       displayCurrency,
                     )}
                   </strong>{' '}
@@ -91,8 +99,11 @@ const SummaryBySubscriptions = (
                   ✈️ Your subscriptions cost equals a vacation every{' '}
                   <strong>
                     {
-                      getInsights(subscriptions, displayCurrency, projectionYears)
-                        .vacationEquivalent
+                      getInsights(
+                        subscriptions,
+                        displayCurrency,
+                        projectionYears,
+                      ).vacationEquivalent
                     }
                   </strong>{' '}
                   years
@@ -101,8 +112,11 @@ const SummaryBySubscriptions = (
                   ☕ That's like buying{' '}
                   <strong>
                     {
-                      getInsights(subscriptions, displayCurrency, projectionYears)
-                        .coffeeEquivalent
+                      getInsights(
+                        subscriptions,
+                        displayCurrency,
+                        projectionYears,
+                      ).coffeeEquivalent
                     }
                   </strong>{' '}
                   coffees per day
@@ -135,4 +149,4 @@ const SummaryBySubscriptions = (
   )
 }
 
-export default SummaryBySubscriptions;
+export default SummaryBySubscriptions
