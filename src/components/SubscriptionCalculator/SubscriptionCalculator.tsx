@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Banknote, Globe, Plus, Settings, Target } from 'lucide-react'
+import { Banknote, Globe, Plus, Target } from 'lucide-react'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
@@ -105,7 +105,7 @@ const SubscriptionCalculator = () => {
       </div>
 
       <div className="flex flex-row md:flex-row items-center gap-4 md:gap-4 fixed z-50 top-2 md:top-4 right-2 md:right-4">
-        <Settings
+        <Target
           size={30}
           onClick={triggerSettingsPanel}
           opacity={!settingsPanelStatus ? '0.5' : '1'}
@@ -243,9 +243,6 @@ const SubscriptionCalculator = () => {
           <div
             className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}
           >
-            {showRatesStatus && currentRates && (
-              <RatesElement />
-            )}
 
             {currentRates &&
               <Subscriptions
@@ -256,6 +253,10 @@ const SubscriptionCalculator = () => {
                 currentRates={currentRates}
               />
             }
+
+            {showRatesStatus && currentRates && (
+              <RatesElement />
+            )}
 
             {showDomainStatus &&
               (<DomainSubscriptions

@@ -146,7 +146,7 @@ const getInsights = (
 
 export const useCalculatorUtils = () => {
   const formatCurrency = (amount: number, currencyCode: Types.CurrencyValue, currencySymbol?: string) => {
-    const symbol = currencySymbol ?? currencies[currencyCode].symbol
+    const symbol = currencySymbol ? currencySymbol : currencies[currencyCode].symbol
     return `${symbol}${amount.toFixed(2)}`
   }
 

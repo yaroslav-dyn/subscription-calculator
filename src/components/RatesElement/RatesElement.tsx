@@ -4,7 +4,7 @@ import { Banknote } from 'lucide-react'
 import { useCalculatorUtils, useGetFullRates } from '@/lib/utils/calculator.utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import getSymbolFromCurrency from 'currency-symbol-map'
-import { useQuery } from '@tanstack/react-query'
+
 
 const RatesElement = () => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)

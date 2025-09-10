@@ -19,9 +19,9 @@ export default function Header() {
       </nav> */}
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
+        <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
           <Link to="/">
-            <Calculator className="w-8 h-8 md:w-12 md:h-12 text-white" />
+            <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
           </Link>
         </div>
       </div>
