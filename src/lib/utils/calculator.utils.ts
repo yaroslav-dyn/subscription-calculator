@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { Types } from '@/lib/utils'
 
 const periods = {
@@ -58,20 +59,31 @@ const getAPIRates = async (currency?: Types.CurrencyValue) => {
 } //
 
 const getFullRates = async (currency?: Types.CurrencyValue) => {
-  try {
-    const response = await fetch(
-      `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
-    )
-    const lastRates = await response.json()
-    return lastRates
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'message' in error) {
-      console.error('Error while getting rates from API', error?.message)
-    } else {
-      console.error('Error while getting rates from API', error)
+  const response = await fetch(
+    `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
+  )
+  if (!response.ok) {
+    const error = new Error('An error occurred while fetching the rates.')
+    // Attempt to enrich error with response details
+    try {
+        const errorBody = await response.json();
+        error.message = (errorBody as {'error-type': string})?.['error-type'] || `Request failed with status ${response.status}`;
+    } catch (e) {
+        error.message = `Request failed with status ${response.status}`;
     }
+    console.error('Error while getting rates from API', error.message);
+    throw error;
   }
+  return response.json()
 }
+
+export const useGetFullRates = (currency?: Types.CurrencyValue) => {
+  return useQuery({
+    queryKey: ['rates', currency],
+    queryFn: () => getFullRates(currency),
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+};
 
 const calculateYearlyCost = (
   sub: Types.ISubscription,

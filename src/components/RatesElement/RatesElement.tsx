@@ -1,26 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
 import { Banknote } from 'lucide-react'
-// import type { CurrencyInfo } from '@/lib/utils/calculator.utils';
-import {
-  useCalculatorUtils
-} from '@/lib/utils/calculator.utils'
+import { useCalculatorUtils, useGetFullRates } from '@/lib/utils/calculator.utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import getSymbolFromCurrency from 'currency-symbol-map'
+import { useQuery } from '@tanstack/react-query'
 
 const RatesElement = () => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
-  const { formatCurrency, getFullRates } = useCalculatorUtils()
-  const [actualRates, setActualRates] = useState([])
+  const { formatCurrency } = useCalculatorUtils()
+  const { data: ratesBySymbol, isLoading, isError } = useGetFullRates(displayCurrency);
   const [currencyFilter, setCurrencyFilter] = useState<string>('');
 
-  useEffect(() => {
-    ; (async () => {
-      const ratesBySymbol = await getFullRates(displayCurrency)
-      setActualRates(ratesBySymbol?.rates)
-    })();
-    console.log(displayRates)
-  }, [displayCurrency]);
+  const actualRates = useMemo(() => ratesBySymbol?.rates || [], [ratesBySymbol]);
+  console.log("🚀 ~ RatesElement ~ actualRates:", actualRates)
 
   const displayRates = useMemo(() => {
     return (
@@ -29,7 +22,7 @@ const RatesElement = () => {
           .map(([key, value]) => {
             return {
               cur: key,
-              rate: value,
+              rate: value as number,
               symbol: getSymbolFromCurrency(key),
             }
           })
@@ -59,6 +52,8 @@ const RatesElement = () => {
       </div>
 
       <section className="text-white grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 max-h-48 overflow-y-auto">
+        {isLoading && <p>Loading rates...</p>}
+        {isError && <p>Error fetching rates.</p>}
         {displayRates &&
           displayRates.map((cr) => (
             <div
