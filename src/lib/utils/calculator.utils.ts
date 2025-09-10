@@ -33,10 +33,11 @@ const currencies: Record<string, CurrencyInfo> = {
 const convertSumWithCurrencyRate = (sum: number, currencyCode: Types.CurrencyValue) =>
   sum / currencies[currencyCode].rate
 
-const getAPIRates = async () => {
+const getAPIRates = async (currency?: Types.CurrencyValue) => {
+
   try {
     const response = await fetch(
-      ' https://api.exchangerate-api.com/v4/latest/USD',
+      `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
     )
     const lastRates = await response.json()
 
@@ -56,12 +57,29 @@ const getAPIRates = async () => {
   }
 } //
 
+const getFullRates = async (currency?: Types.CurrencyValue) => {
+  try {
+    const response = await fetch(
+      `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
+    )
+    const lastRates = await response.json()
+    return lastRates
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'message' in error) {
+      console.error('Error while getting rates from API', error?.message)
+    } else {
+      console.error('Error while getting rates from API', error)
+    }
+  }
+}
+
 const calculateYearlyCost = (
   sub: Types.ISubscription,
   displayCurrency: Types.CurrencyValue,
+  actualCurrencies: Record<string, CurrencyInfo>
 ) => {
   // Convert subscription price to the base currency (USD)
-  const priceInBaseCurrency = sub.price * currencies[sub.currency].rate
+  const priceInBaseCurrency = sub.price * actualCurrencies[sub.currency].rate
   // Convert from base currency to the selected display currency
   const priceInDisplayCurrency =
     priceInBaseCurrency / currencies[displayCurrency].rate
@@ -76,7 +94,7 @@ const getTotalCosts = (
   const yearlyTotal =
     subscriptionsArray &&
     subscriptionsArray.reduce((total, sub) => {
-      return total + calculateYearlyCost(sub, displayCurrency)
+      return total + calculateYearlyCost(sub, displayCurrency, currencies)
     }, 0)
 
   return {
@@ -125,6 +143,7 @@ export const useCalculatorUtils = () => {
     currencies,
     formatCurrency,
     getAPIRates,
+    getFullRates,
     $cr: convertSumWithCurrencyRate,
     calculateYearlyCost,
     getTotalCosts,

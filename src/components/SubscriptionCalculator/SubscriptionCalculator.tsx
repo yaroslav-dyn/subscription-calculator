@@ -247,12 +247,15 @@ const SubscriptionCalculator = () => {
               <RatesElement currentRates={currentRates} />
             )}
 
-            <Subscriptions
-              triggerSettingshandler={() => setShowAddForm(true)}
-              projectionYears={projectionYears}
-              editSubscription={handleEditClick}
-              removeSubscription={removeSubscription}
-            />
+            {currentRates &&
+              <Subscriptions
+                triggerSettingshandler={() => setShowAddForm(true)}
+                projectionYears={projectionYears}
+                editSubscription={handleEditClick}
+                removeSubscription={removeSubscription}
+                currentRates={currentRates}
+              />
+            }
 
             {showDomainStatus &&
               (<DomainSubscriptions

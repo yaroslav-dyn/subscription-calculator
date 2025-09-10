@@ -1,14 +1,16 @@
 import { useStore } from '@tanstack/react-store'
-import { BarChart3, Edit, Plus, Settings, Trash2 } from 'lucide-react'
+import { BarChart3, Edit, Plus, Trash2 } from 'lucide-react'
 import type { ISubscription } from '@/lib/utils/types'
 import { useCalculatorUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
+import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
 
 interface ISubscriptions {
   projectionYears: number
   triggerSettingshandler: () => void
   editSubscription: (sub: ISubscription) => void
   removeSubscription: (name: string) => void
+  currentRates: Record<string, CurrencyInfo> | undefined
 }
 
 const Subscriptions = ({
@@ -16,6 +18,7 @@ const Subscriptions = ({
   triggerSettingshandler,
   editSubscription,
   removeSubscription,
+  currentRates
 }: ISubscriptions) => {
   const { formatCurrency, calculateYearlyCost } = useCalculatorUtils()
 
@@ -23,7 +26,6 @@ const Subscriptions = ({
     subscriptionStore,
     (state) => state,
   )
-
   return (
     <div className="Subscriptions-component">
       {/* Current Subscriptions */}
@@ -43,7 +45,7 @@ const Subscriptions = ({
 
           <div className="space-y-3">
             {subscriptions.map((sub) => {
-              const yearlyCost = calculateYearlyCost(sub, displayCurrency)
+              const yearlyCost = calculateYearlyCost(sub, displayCurrency, currentRates!)
               return (
                 <div
                   key={sub.name}
