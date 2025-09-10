@@ -232,8 +232,8 @@ const SubscriptionCalculator = () => {
               {/* SECTION: Domain Renewal Tracker */}
               <DomainSubscriptions
                 hideAddButton={false}
-                domainModalHandler={() => setShowDomainForm(!showDomainForm)}
-                removeDomainhandler={removeDomainFromAction}
+                removeDomainhandler={() => undefined}
+                triggerDomainModal={() => setShowDomainForm(!showDomainForm)}
               />
 
             </div>
@@ -244,7 +244,7 @@ const SubscriptionCalculator = () => {
             className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}
           >
             {showRatesStatus && currentRates && (
-              <RatesElement currentRates={currentRates} />
+              <RatesElement />
             )}
 
             {currentRates &&
@@ -260,7 +260,6 @@ const SubscriptionCalculator = () => {
             {showDomainStatus &&
               (<DomainSubscriptions
                 hideAddButton={true}
-                domainModalHandler={() => setShowDomainForm(!showDomainForm)}
                 removeDomainhandler={removeDomainFromAction}
                 triggerDomainModal={() => setShowDomainForm(true)}
               />)

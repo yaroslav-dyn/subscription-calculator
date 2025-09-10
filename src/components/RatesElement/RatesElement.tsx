@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
 import { Banknote } from 'lucide-react'
-import type { CurrencyInfo } from '@/lib/utils/calculator.utils';
+// import type { CurrencyInfo } from '@/lib/utils/calculator.utils';
 import {
-
   useCalculatorUtils
 } from '@/lib/utils/calculator.utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
+import getSymbolFromCurrency from 'currency-symbol-map'
 
 const RatesElement = () => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
-  const { currencies, formatCurrency, getFullRates } = useCalculatorUtils()
+  const { formatCurrency, getFullRates } = useCalculatorUtils()
   const [actualRates, setActualRates] = useState([])
   const [currencyFilter, setCurrencyFilter] = useState<string>('');
 
@@ -30,34 +30,35 @@ const RatesElement = () => {
             return {
               cur: key,
               rate: value,
-              symbol: currencies?.[key] ? currencies?.[key].symbol : '',
+              symbol: getSymbolFromCurrency(key),
             }
           })
-        .filter((crr) => crr.cur !== displayCurrency && (currencyFilter ? currencyFilter.toLowerCase() === crr.cur.toLocaleLowerCase() : true))) ||
-      []
+          .filter((crr) => crr.cur !== displayCurrency &&
+            (currencyFilter ? crr.cur.toLowerCase().includes(currencyFilter.toLowerCase()) : true)))
+      || []
     )
   }, [actualRates, displayCurrency, currencyFilter])
 
 
   return (
     <div className="RatesElement-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl py-6 px-6 shadow-xl">
-      <div className="flex items-center justify-between mb-4">
-        <div className='flex items-center gap-x-1'>
+      <div className="flex flex-col md:flex-row md:items-center max-md:gap-y-4 md:justify-between mb-4">
+        <div className='flex items-center gap-x-1 md:basis-1/2'>
           <Banknote className="text-white w-5 h-5 mr-2" />
-          <h3 className="text-white font-semibold flex items-center">
+          <h3 className="text-white font-semibold flex items-center text-2xl">
             Currency rate
           </h3>
         </div>
         <input
-          className='border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm'
+          className='border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm basis-full md:basis-1/2'
           type="search"
           value={currencyFilter}
           onInput={(e) => setCurrencyFilter((e.target as HTMLInputElement).value)}
-          placeholder='find currency'
+          placeholder='Find currency ...'
         />
       </div>
 
-      <section className="text-white grid md:grid-cols-2 gap-4 mb-2 max-h-48 overflow-y-auto">
+      <section className="text-white grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 max-h-48 overflow-y-auto">
         {displayRates &&
           displayRates.map((cr) => (
             <div
@@ -65,7 +66,7 @@ const RatesElement = () => {
               key={cr.cur}
             >
               <span>{cr.cur}</span>
-              <span>{'symbol' in cr ? cr.symbol : ''} {cr.rate}</span>
+              <span>{formatCurrency(cr.rate, cr.cur, cr.symbol || '$')}</span>
             </div>
           ))}
       </section>

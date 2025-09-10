@@ -21,6 +21,7 @@
     "@tanstack/react-router-devtools": "^1.131.5",
     "@tanstack/react-store": "^0.7.0",
     "@tanstack/store": "^0.7.0",
+    "currency-symbol-map": "^5.1.0",
     "lucide-react": "^0.542.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
