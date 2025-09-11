@@ -41,22 +41,11 @@ const indexRoute = createRoute({
   component: App,
 })
 
-const CalculatorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: SubscriptionCalculator,
-})
-
-const CurrencyRateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/currency-rate',
-  component: () => <CurrencyRate hidePanelHeading={true} isPage={true} />,
-})
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  CalculatorRoute,
-  CurrencyRateRoute,
+  SubscriptionCalculator(rootRoute),
+  CurrencyRate(rootRoute),
   TanStackQueryDemo(rootRoute),
   StoreDemo(rootRoute),
 ])

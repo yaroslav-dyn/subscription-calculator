@@ -4,13 +4,15 @@ import {
   subscriptionStore,
   updateDisplayCurrency,
 } from '@/store/subscriptionStore'
+import type { CurrencyValue } from '@/lib/utils/types';
 
 
 interface ICurrencySelect {
   classes?: string
+  extEvent?: (currency: CurrencyValue) => void
 }
 
-const CurrencySelectElement = ({ classes="" }: ICurrencySelect) => {
+const CurrencySelectElement = ({ classes = "", extEvent }: ICurrencySelect) => {
 
   const {
     displayCurrency,
@@ -19,7 +21,7 @@ const CurrencySelectElement = ({ classes="" }: ICurrencySelect) => {
   return (
     <select
       value={displayCurrency}
-      onChange={e => updateDisplayCurrency(e.target.value)}
+      onChange={e => extEvent ? extEvent(e.target.value) : updateDisplayCurrency(e.target.value)}
       className={`w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400 ${classes}`}>
       {Types.AvailableCurrencies.map(curr => <option key={curr} value={curr}>
         {curr}

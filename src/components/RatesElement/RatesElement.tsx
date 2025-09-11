@@ -1,10 +1,11 @@
+
 import { useMemo, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
-import { Banknote } from 'lucide-react'
+import { Currency } from 'lucide-react'
 import { useCalculatorUtils, useGetFullRates } from '@/lib/utils/calculator.utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import getSymbolFromCurrency from 'currency-symbol-map'
-import CurrencySelectElement from '@/components/ui/CurrencySelect/CurrencySelect'
+import CurrencySelectElement from '@/components/ui/CurrencySelect'
 
 interface IRatesTypes {
   classes?: string
@@ -12,26 +13,32 @@ interface IRatesTypes {
   isPage?: boolean
 }
 
+interface IDisplayRate {
+  cur: string;
+  rate: number;
+  symbol: string;
+}
+
 const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
   const { formatCurrency } = useCalculatorUtils()
   const { data: ratesBySymbol, isLoading, isError } = useGetFullRates(displayCurrency);
   const [currencyFilter, setCurrencyFilter] = useState<string>('');
-  
-  const [coefficiant, setCoefficiant] = useState<number>(1);
 
-  const containerClasses = `RatesElement-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl py-6 px-6 shadow-xl ${classes}`
+  const [coefficiant, setCoefficiant] = useState<string>('1');
+
+  const containerClasses = `RatesElement-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl py-6 px-6 shadow-xl`
 
   const actualRates = useMemo(() => ratesBySymbol?.rates || [], [ratesBySymbol]);
 
-  const displayRates = useMemo(() => {
+  const displayRates: IDisplayRate[] = useMemo(() => {
     return (
       (actualRates &&
         Object.entries(actualRates)
           .map(([key, value]) => {
             return {
               cur: key,
-              rate: value as number * (coefficiant || 1),
+              rate: value as number * (parseFloat(coefficiant) || 1),
               symbol: getSymbolFromCurrency(key),
             }
           })
@@ -42,21 +49,30 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
   }, [actualRates, displayCurrency, currencyFilter, coefficiant])
 
   return (
-    <div className='max-w-6xl mx-auto'>
-      {hidePanelHeading
-        ? <h2 className='flex items-center gap-x-2 justify-center mb-6'>
-          <Banknote className="text-white w-12 h-12" />
-          <div className="text-white font-semibold flex items-center text-4xl">
-            Currency rate
+    <div className={`max-w-6xl mx-auto ${classes}`}>
+      {hidePanelHeading && (
+        <>
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
+              <Currency className="w-8 h-8 md:w-10 md:h-10 text-white" />
+            </div>
           </div>
-        </h2>
-        : null
+
+          <h2 className='flex items-center gap-x-2 justify-center mb-6'>
+            {/* <Currency className="text-white w-8 h-8" /> */}
+            <div className="text-white font-semibold flex items-center text-4xl">
+              Currency rate
+            </div>
+          </h2>
+        </>
+      )
+
       }
       <div className={containerClasses}>
-        <div className="flex flex-col md:flex-row md:items-center max-md:gap-y-4 md:justify-between mb-4">
+        <div className="flex flex-col md:flex-row md:items-center max-md:gap-y-4 md:justify-between mb-6">
           {!hidePanelHeading && (
             <div className='flex items-center gap-x-1 md:basis-1/3'>
-              <Banknote className="text-white w-5 h-5 mr-2" />
+              <Currency className="text-white w-5 h-5 mr-2" />
               <h3 className="text-white font-semibold flex items-center text-2xl">
                 Currency rate
               </h3>
@@ -66,13 +82,13 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
           <div className={`flex flex-col md:flex-row gap-2 md:items-center md:justify-between 
             ${!isPage ? 'md:basis-2/3' : 'flex-1'} gap-x-2`}>
             {isPage && (
-              <CurrencySelectElement classes="md:basis-24" />
+              <CurrencySelectElement classes="md:basis-28" />
             )}
             <input
               className='border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24'
               type="number"
               value={coefficiant}
-              onInput={(e) => setCoefficiant(parseInt((e.target as HTMLInputElement).value))}
+              onInput={(e) => setCoefficiant( (e.target as HTMLInputElement).value)}
               placeholder='Count ...'
             />
             <input
@@ -82,11 +98,11 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
               onInput={(e) => setCurrencyFilter((e.target as HTMLInputElement).value)}
               placeholder='Find currency ...'
             />
-         </div>
+          </div>
         </div>
 
         <section className={`text-white grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 
-          ${!isPage ? 'max-h-48' : ''}overflow-y-auto`}>
+          ${!isPage ? 'max-h-48' : 'max-h-[42vh] md:max-h-[50vh]'} overflow-y-auto`}>
           {isLoading && <p>Loading rates...</p>}
           {isError && <p>Error fetching rates.</p>}
           {displayRates &&
@@ -105,4 +121,4 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
   )
 }
 
-export default RatesElement
+export default RatesElement 

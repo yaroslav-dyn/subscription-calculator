@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
 import type { ISubscription } from '@/lib/utils/types'
 import type { Types } from '@/lib/utils'
@@ -21,7 +21,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
   const [period, setPeriod] = React.useState<'monthly' | 'yearly'>('monthly')
   const [currency, setCurrency] = React.useState<Types.CurrencyValue>('USD')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (subscription) {
       setName(subscription.name)
       setPrice(subscription.price.toString())

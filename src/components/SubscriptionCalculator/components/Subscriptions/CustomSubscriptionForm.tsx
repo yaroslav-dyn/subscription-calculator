@@ -6,6 +6,7 @@ import {
 } from '@/store/subscriptionStore'
 import { useStore } from '@tanstack/react-store'
 import { BarChart3 } from 'lucide-react'
+import CurrencySelectElement from '@/components/ui/CurrencySelect'
 
 interface ICustomSubscriptionFrom {
   onCancel: () => void
@@ -70,23 +71,27 @@ const CustomSubscriptionForm = (
           }
           className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
-        <select
-          value={newSub.period}
-          onChange={(e) =>
-            setNewSub({
-              ...newSub,
-              period: e.target.value as 'monthly' | 'yearly',
-            })
-          }
-          className="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-        >
-          {Object.entries(periods).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value.label}
-            </option>
-          ))}
-        </select>
+
+        <CurrencySelectElement extEvent={(curr) => setNewSub({ ...newSub, currency: curr })} />
       </div>
+
+      <select
+        value={newSub.period}
+        onChange={(e) =>
+          setNewSub({
+            ...newSub,
+            period: e.target.value as 'monthly' | 'yearly',
+          })
+        }
+        className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+      >
+        {Object.entries(periods).map(([key, value]) => (
+          <option key={key} value={key}>
+            {value.label}
+          </option>
+        ))}
+      </select>
+
       <div className="mt-6 flex flex-col md:flex-row md:justify-end gap-4">
         <button
           onClick={onCancel}

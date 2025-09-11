@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Banknote, Globe, Plus, Target } from 'lucide-react'
+import { Banknote, Calculator, Globe, Plus, Target } from 'lucide-react'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
@@ -24,7 +24,7 @@ import {
   updateSubscription as updateSubscriptionAction,
 } from '@/store/subscriptionStore'
 import { Types, useCalculatorUtils } from '@/lib/utils'
-import RatesElement from '@/components/RatesElement'
+import RatesElement from '@/components/RatesElement/RatesElement'
 
 const SubscriptionCalculator = () => {
   // NOTE: STORE
@@ -97,6 +97,11 @@ const SubscriptionCalculator = () => {
 
   return (
     <div className="p-4">
+      <div className="text-center mt-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
+            <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
+        </div>
+      </div>
       {/* Background Elements */}
       <div className={`absolute min-h-screen md:inset-0`}>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -255,7 +260,7 @@ const SubscriptionCalculator = () => {
             }
 
             {showRatesStatus && currentRates && (
-              <RatesElement />
+              <RatesElement hidePanelHeading={false} isPage={false}  />
             )}
 
             {showDomainStatus &&
@@ -303,5 +308,5 @@ const SubscriptionCalculator = () => {
   )
 }//
 
-export default SubscriptionCalculator
+export default SubscriptionCalculator 
 
