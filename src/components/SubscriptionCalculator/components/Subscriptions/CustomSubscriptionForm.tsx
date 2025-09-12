@@ -12,7 +12,7 @@ interface ICustomSubscriptionFrom {
   onCancel: () => void
 }
 
-const CustomSubscriptionForm = (
+const  CustomSubscriptionForm = (
   {
     onCancel
   }: ICustomSubscriptionFrom
@@ -30,7 +30,6 @@ const CustomSubscriptionForm = (
     period: 'monthly' as 'monthly' | 'yearly',
     currency: 'USD' as Types.CurrencyValue,
   })
-
 
   const addCustomSubscription = () => {
     if (newSub.name && newSub.price) {

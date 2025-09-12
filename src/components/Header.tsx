@@ -27,8 +27,9 @@ export default function Header() {
         </div>
         <nav className="flex flex-col space-y-4 p-4">
           <Link
-            className="opacity-60 flex items-center space-x-2"
-            activeProps={{ className: `opacity-100` }}
+            className="block opacity-60 flex items-center space-x-2"
+            activeProps={{ className: `opacity-100`}}
+            activeOptions={{ exact: true }}
             to="/"
             onClick={() => setIsMenuOpen(false)}
           >
@@ -38,11 +39,12 @@ export default function Header() {
           <Link
             className="opacity-60 flex items-center space-x-2"
             activeProps={{ className: `opacity-100` }}
+            activeOptions={{ exact: true }}
             to="/currency-rate"
             onClick={() => setIsMenuOpen(false)}
           >
             <Currency className="text-white w-6 h-6" />
-          <span>  Currency rate</span>
+            <span> Currency rate</span>
           </Link>
         </nav>
       </div>

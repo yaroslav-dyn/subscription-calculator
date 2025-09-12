@@ -58,12 +58,16 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
             </div>
           </div>
 
-          <h2 className='flex items-center gap-x-2 justify-center mb-6'>
+          <h2 className='flex items-center gap-x-2 justify-center mb-2'>
             {/* <Currency className="text-white w-8 h-8" /> */}
             <div className="text-white font-semibold flex items-center text-4xl">
               Currency rate
             </div>
           </h2>
+          <p className="text-white/70 text-center mb-1">Check the latest currency exchange rates.</p>
+          <p className="text-white/50 text-xs text-center mb-6">
+            Using data from <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">exchangerate-api.com</a>
+          </p>
         </>
       )
 

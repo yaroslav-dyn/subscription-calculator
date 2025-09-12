@@ -256,6 +256,7 @@ const SubscriptionCalculator = () => {
                 editSubscription={handleEditClick}
                 removeSubscription={removeSubscription}
                 currentRates={currentRates}
+                showAddFormhandler={() => setShowAddForm(true)}
               />
             }
 
@@ -273,7 +274,6 @@ const SubscriptionCalculator = () => {
 
             <SummaryBySubscriptions
               projectionYears={projectionYears}
-              showAddFormhandler={() => setShowAddForm(true)}
             />
           </div>
         </div>
