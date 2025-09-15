@@ -1,7 +1,8 @@
 import { Store } from '@tanstack/store'
-import { type IDomain, Types } from '@/lib/utils';
+import { type IDomain, Types } from '@/lib/utils'
 import type { ISubscription } from '@/lib/utils/types'
 import { popularServices } from '@/lib/utils/constants'
+import { supabase } from '@/lib/supabaseClient'
 
 export type TCurrency = Types.CurrencyValue
 
@@ -37,54 +38,89 @@ const defaultState: SubscriptionStoreState = {
   showDomainStatus: false,
 }
 
-// Function to safely get the initial state from localStorage
-const getInitialState = (): SubscriptionStoreState => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const storedState = localStorage.getItem('subscription_store')
-    if (storedState) {
-      try {
-        // Merge the stored state with the default state to ensure all keys are present
-        return { ...defaultState, ...JSON.parse(storedState) }
-      } catch (error) {
-        console.error('Error parsing state from localStorage:', error)
-        return defaultState
-      }
-    }
-  }
-  return defaultState
-}
-
 // Create the store with the initial state
-export const subscriptionStore = new Store<SubscriptionStoreState>(
-  getInitialState(),
-)
-
-// Subscribe to store changes to persist the entire state to localStorage
-subscriptionStore.subscribe(() => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const state = subscriptionStore.state
-    localStorage.setItem('subscription_store', JSON.stringify(state))
-  }
-})
+export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 
 // --- Actions to manipulate the store ---
 
 /**
- * Adds a new subscription to the user's list.
- * @param subscription The subscription to add.
+ * Fetches subscriptions from Supabase and updates the store.
  */
-export const addSubscription = (subscription: ISubscription) => {
+export const fetchSubscriptions = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching subscriptions:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
-    subscriptions: [...state.subscriptions, subscription],
+    subscriptions: data || [],
   }))
 }
 
 /**
- * Removes a subscription from the user's list by its name.
+ * Adds a new subscription to the user's list and Supabase.
+ * @param subscription The subscription to add.
+ */
+export const addSubscription = async (subscription: ISubscription) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .insert([{ ...subscription, user_id: user.id }])
+    .select()
+
+  if (error) {
+    console.error('Error adding subscription:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: [...state.subscriptions, data[0]],
+    }))
+  }
+}
+
+/**
+ * Removes a subscription from the user's list and Supabase by its name.
  * @param subscriptionName The name of the subscription to remove.
  */
-export const removeSubscription = (subscriptionName: string) => {
+export const removeSubscription = async (subscriptionName: string) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const subToRemove = subscriptionStore.state.subscriptions.find(
+    (s) => s.name === subscriptionName,
+  )
+  if (!subToRemove) return
+
+  const { error } = await supabase
+    .from('subscriptions')
+    .delete()
+    .eq('id', subToRemove.id)
+
+  if (error) {
+    console.error('Error removing subscription:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
     subscriptions: state.subscriptions.filter(
@@ -94,20 +130,43 @@ export const removeSubscription = (subscriptionName: string) => {
 }
 
 /**
- * Updates an existing subscription.
+ * Updates an existing subscription in the user's list and Supabase.
  * @param subscriptionName The name of the subscription to update.
  * @param updatedValues An object containing the properties to update.
  */
-export const updateSubscription = (
+export const updateSubscription = async (
   subscriptionName: string,
   updatedValues: Partial<ISubscription>,
 ) => {
-  subscriptionStore.setState((state) => ({
-    ...state,
-    subscriptions: state.subscriptions.map((s) =>
-      s.name === subscriptionName ? { ...s, ...updatedValues } : s,
-    ),
-  }))
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const subToUpdate = subscriptionStore.state.subscriptions.find(
+    (s) => s.name === subscriptionName,
+  )
+  if (!subToUpdate) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .update(updatedValues)
+    .eq('id', subToUpdate.id)
+    .select()
+
+  if (error) {
+    console.error('Error updating subscription:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: state.subscriptions.map((s) =>
+        s.name === subscriptionName ? data[0] : s,
+      ),
+    }))
+  }
 }
 
 /**

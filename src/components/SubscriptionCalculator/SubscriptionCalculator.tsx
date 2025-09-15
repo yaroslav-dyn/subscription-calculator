@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Banknote, Calculator, Globe, Plus, Target } from 'lucide-react'
-import { isMobile } from 'react-device-detect';
+import { Calculator, Plus, Target } from 'lucide-react'
+import { isMobile } from 'react-device-detect'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import {
@@ -10,14 +10,14 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  TouchSensor
-} from '@dnd-kit/core';
+  TouchSensor,
+} from '@dnd-kit/core'
 import {
   arrayMove,
   SortableContext,
   // sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+} from '@dnd-kit/sortable'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './components/DomainSubscriptions/DomainForm'
@@ -25,7 +25,9 @@ import SummaryBySubscriptions from './components/SummaryBySubscriptions'
 import DomainSubscriptions from './components/DomainSubscriptions'
 import type { ISubscription } from '@/lib/utils/types'
 import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
-import Subscriptions, { CustomSubscriptionForm } from '@/components/SubscriptionCalculator/components/Subscriptions'
+import Subscriptions, {
+  CustomSubscriptionForm,
+} from '@/components/SubscriptionCalculator/components/Subscriptions'
 import {
   addDomain as addDomainToAction,
   addSubscription as addSubscriptionToAction,
@@ -34,14 +36,12 @@ import {
   setNewDomain,
   subscriptionStore,
   updateDisplayCurrency,
-  updateSettingsPanelStatus,
-  updateShowDomainStatus,
-  updateShowRatesStatus,
   updateSubscription as updateSubscriptionAction,
+  fetchSubscriptions,
 } from '@/store/subscriptionStore'
 import { Types, useCalculatorUtils } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
-import SortableItem from '../SortableDragWrapper';
+import SortableItem from '../SortableDragWrapper'
 
 const SubscriptionCalculator = () => {
   // NOTE: STORE
@@ -69,28 +69,54 @@ const SubscriptionCalculator = () => {
   const [editingSubscription, setEditingSubscription] =
     useState<ISubscription | null>(null)
 
-  const [rightColumnItems, setRightColumnItems] = useState(['subscriptions', 'rates', 'domains', 'summary']);
+  const [rightColumnItems, setRightColumnItems] = useState([
+    'subscriptions',
+    'rates',
+    'domains',
+    'summary',
+  ])
+
+  // Load saved order from localStorage on mount
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('subscriptionCalculatorRightColumnOrder')
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder)
+        if (Array.isArray(parsedOrder) && parsedOrder.length > 0) {
+          setRightColumnItems(parsedOrder)
+        }
+      } catch (e) {
+        console.error('Failed to parse saved right column order from localStorage', e)
+      }
+    }
+  }, [])
 
   const sensors = useSensors(
     // useSensor(PointerSensor),
     // useSensor(KeyboardSensor, {
     //   coordinateGetter: sortableKeyboardCoordinates,
     // }),
-    isMobile ? useSensor(TouchSensor) : useSensor(PointerSensor)
-  );
+    isMobile ? useSensor(TouchSensor) : useSensor(PointerSensor),
+  )
 
   const handleDragEnd = (event: any) => {
-    const { active, over } = event;
+    const { active, over } = event
 
     if (active.id !== over.id) {
       setRightColumnItems((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+        const oldIndex = items.indexOf(active.id)
+        const newIndex = items.indexOf(over.id)
+        const newOrder = arrayMove(items, oldIndex, newIndex)
+        // Save new order to localStorage
+        localStorage.setItem('subscriptionCalculatorRightColumnOrder', JSON.stringify(newOrder))
+        return newOrder
+      })
     }
-  };
+  }
 
+  useEffect(() => {
+    fetchSubscriptions()
+  }, [])
 
   useEffect(() => {
     const updateRates = async () => {
@@ -99,7 +125,6 @@ const SubscriptionCalculator = () => {
     }
     updateRates()
   }, [])
-
 
   const handleEditClick = (sub: ISubscription) => {
     setEditingSubscription(sub)
@@ -123,17 +148,17 @@ const SubscriptionCalculator = () => {
     removeSubscriptionFromAction(name)
   }
 
-  const triggerSettingsPanel = () => {
-    updateSettingsPanelStatus(!settingsPanelStatus)
-  }
+  // const triggerSettingsPanel = () => {
+  //   updateSettingsPanelStatus(!settingsPanelStatus)
+  // }
 
-  const triggerRatesPanel = () => {
-    updateShowRatesStatus(!showRatesStatus)
-  }
+  // const triggerRatesPanel = () => {
+  //   updateShowRatesStatus(!showRatesStatus)
+  // }
 
-  const triggerDomainPanel = () => {
-    updateShowDomainStatus(!showDomainStatus)
-  }
+  // const triggerDomainPanel = () => {
+  //   updateShowDomainStatus(!showDomainStatus)
+  // }
 
   const rightColumnComponents: { [key: string]: ReactNode } = {
     subscriptions: currentRates && (
@@ -146,9 +171,9 @@ const SubscriptionCalculator = () => {
         showAddFormhandler={() => setShowAddForm(true)}
       />
     ),
-    rates: showRatesStatus && currentRates && (
-      <RatesElement hidePanelHeading={false} isPage={false} />
-    ),
+    rates:
+      showRatesStatus &&
+      currentRates && <RatesElement hidePanelHeading={false} isPage={false} />,
     domains: showDomainStatus && (
       <DomainSubscriptions
         hideAddButton={true}
@@ -156,15 +181,14 @@ const SubscriptionCalculator = () => {
         triggerDomainModal={() => setShowDomainForm(true)}
       />
     ),
-    summary: <SummaryBySubscriptions projectionYears={projectionYears} />
-  };
+    summary: <SummaryBySubscriptions projectionYears={projectionYears} />,
+  }
 
   return (
     <main className="p-4">
-
       <div className="text-center mt-6">
         <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
-            <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
         </div>
       </div>
 
@@ -175,7 +199,7 @@ const SubscriptionCalculator = () => {
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
       </div>
 
-      <div className="flex flex-row md:flex-row items-center gap-4 md:gap-4 fixed z-50 top-2 md:top-4 right-2 md:right-4">
+      {/* <div className="flex flex-row md:flex-row items-center gap-4 md:gap-4 fixed z-50 top-2 md:top-4 right-2 md:right-4">
         <Target
           size={30}
           onClick={triggerSettingsPanel}
@@ -196,7 +220,7 @@ const SubscriptionCalculator = () => {
           opacity={!showDomainStatus ? '0.5' : '1'}
           className="text-white cursor-pointer hover:opacity-100"
         />
-      </div>
+      </div> */}
 
       <section className="relative max-w-6xl mx-auto">
         <div className="text-center mb-8">
@@ -209,10 +233,9 @@ const SubscriptionCalculator = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-
           {/* SECTION: Left Column - Controls */}
           {settingsPanelStatus && (
-            <aside id='calc_left__column' className={`lg:col-span-1 space-y-6`}>
+            <aside id="calc_left__column" className={`lg:col-span-1 space-y-6`}>
               {/* Currency & Projection Settings */}
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
                 <div className="flex items-center justify-between">
@@ -297,7 +320,6 @@ const SubscriptionCalculator = () => {
                   <Plus className="w-5 h-5 mr-2" />
                   Add Custom subscription
                 </button>
-
               </div>
 
               {/* SECTION: Domain Renewal Tracker */}
@@ -306,14 +328,15 @@ const SubscriptionCalculator = () => {
                 removeDomainhandler={() => undefined}
                 triggerDomainModal={() => setShowDomainForm(!showDomainForm)}
               />
-
             </aside>
           )}
 
           {/* SECTION: Right Column - Results */}
           <section
-            id='calc_right__column'
-            className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}
+            id="calc_right__column"
+            className={`${
+              settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'
+            } space-y-6`}
           >
             <DndContext
               sensors={sensors}
@@ -324,7 +347,7 @@ const SubscriptionCalculator = () => {
                 items={rightColumnItems}
                 strategy={verticalListSortingStrategy}
               >
-                {rightColumnItems.map(id => (
+                {rightColumnItems.map((id) => (
                   <SortableItem key={id} id={id}>
                     {rightColumnComponents[id]}
                   </SortableItem>
@@ -337,9 +360,7 @@ const SubscriptionCalculator = () => {
 
       {/* SECTION: Custom Subscription modal */}
       <ModalUiWrapper isOpen={showAddForm}>
-        <CustomSubscriptionForm
-          onCancel={() => setShowAddForm(false)}
-        />
+        <CustomSubscriptionForm onCancel={() => setShowAddForm(false)} />
       </ModalUiWrapper>
 
       {/* SECTION: Domain Renewals modal  */}
@@ -359,10 +380,8 @@ const SubscriptionCalculator = () => {
         subscription={editingSubscription}
         onSave={handleSaveSubscription}
       />
-
     </main>
   )
 }
 
-export default SubscriptionCalculator 
-
+export default SubscriptionCalculator
