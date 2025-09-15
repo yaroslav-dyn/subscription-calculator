@@ -18,8 +18,6 @@ import {
   // sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './components/DomainSubscriptions/DomainForm'
@@ -43,40 +41,7 @@ import {
 } from '@/store/subscriptionStore'
 import { Types, useCalculatorUtils } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
-
-import { cloneElement } from 'react'
-import { GripVertical } from 'lucide-react'
-
-const SortableItem = ({ id, children }: { id: string, children: ReactNode }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-  
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  };
-
-  // Clone the child element to add the drag handle props
-  const childWithProps = children ? cloneElement(children as React.ReactElement, {
-    ...attributes,
-    ...listeners,
-  }) : null;
-
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative">
-      <div className="absolute top-1 right-1 z-10 cursor-grab" {...attributes} {...listeners}>
-        <GripVertical className="text-white/50" />
-      </div>
-      {childWithProps}
-    </div>
-  );
-}
+import SortableItem from '../SortableDragWrapper';
 
 const SubscriptionCalculator = () => {
   // NOTE: STORE
