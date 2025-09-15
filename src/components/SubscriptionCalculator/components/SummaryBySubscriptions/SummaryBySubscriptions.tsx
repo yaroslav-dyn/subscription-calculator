@@ -21,7 +21,7 @@ const SummaryBySubscriptions = ({
     <div className="SummaryBySubscriptions-component">
       <>
         {/* Total Summary */}
-        {subscriptions.length > 0 && (
+        {subscriptions.length > 0 ? (
           <div className="backdrop-blur-lg bg-gradient-to-br from-white/20 to-white/10 border border-white/30 rounded-2xl p-6 shadow-xl">
             <h3 className="text-white font-semibold mb-6 flex items-center text-xl">
               <TrendingUp className="w-6 h-6 mr-2" />
@@ -122,6 +122,10 @@ const SummaryBySubscriptions = ({
               </div>
             </div>
           </div>
+        ): (
+            <h3 className="text-white text-center text-xl font-semibold mb-2">
+              No Subscriptions Yet
+            </h3>
         )}
       </>
     </div>

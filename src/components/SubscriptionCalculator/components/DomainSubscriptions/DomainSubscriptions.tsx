@@ -70,7 +70,7 @@ const DomainSubscriptions = ({
 
       {!hideAddButton && (
         <button
-          onClick={triggerDomainModal}
+          onClick={triggerDomainModal}  
           className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-blue-500/30 to-teal-500/30 rounded-xl text-white hover:from-blue-500/40 hover:to-teal-500/40 transition-all duration-300 mb-4"
         >
           <Plus className="w-5 h-5 mr-2" />

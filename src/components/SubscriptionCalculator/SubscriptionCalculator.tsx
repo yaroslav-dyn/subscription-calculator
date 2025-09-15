@@ -1,19 +1,21 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Banknote, Calculator, Globe, Plus, Target } from 'lucide-react'
+import { isMobile } from 'react-device-detect';
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import {
   DndContext,
   closestCenter,
-  KeyboardSensor,
+  // KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  TouchSensor
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
+  // sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -53,7 +55,7 @@ const SortableItem = ({ id, children }: { id: string, children: ReactNode }) => 
     transform,
     transition,
   } = useSortable({ id });
-
+  
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
@@ -85,6 +87,7 @@ const SubscriptionCalculator = () => {
     showDomainStatus,
     displayCurrency,
     newDomain,
+    // subscriptions
   } = useStore(subscriptionStore, (state) => state)
 
   // NOTE: HOOKS
@@ -104,10 +107,11 @@ const SubscriptionCalculator = () => {
   const [rightColumnItems, setRightColumnItems] = useState(['subscriptions', 'rates', 'domains', 'summary']);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    // useSensor(PointerSensor),
+    // useSensor(KeyboardSensor, {
+    //   coordinateGetter: sortableKeyboardCoordinates,
+    // }),
+    isMobile ? useSensor(TouchSensor) : useSensor(PointerSensor)
   );
 
   const handleDragEnd = (event: any) => {
@@ -187,7 +191,7 @@ const SubscriptionCalculator = () => {
         triggerDomainModal={() => setShowDomainForm(true)}
       />
     ),
-    summary: <SummaryBySubscriptions projectionYears={projectionYears} />,
+    summary: <SummaryBySubscriptions projectionYears={projectionYears} />
   };
 
   return (
@@ -200,7 +204,7 @@ const SubscriptionCalculator = () => {
       </div>
 
       {/* Background Elements */}
-      <div className={`absolute min-h-screen md:inset-0`}>
+      <div className={`absolute min-h-screen md:inset-0 hidden xl:block`}>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
