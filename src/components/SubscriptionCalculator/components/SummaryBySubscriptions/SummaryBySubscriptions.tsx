@@ -1,5 +1,5 @@
 import { useStore } from '@tanstack/react-store'
-import { AlertCircle, PieChart, TrendingUp } from 'lucide-react'
+import { AlertCircle, TrendingUp } from 'lucide-react'
 import { useCalculatorUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 

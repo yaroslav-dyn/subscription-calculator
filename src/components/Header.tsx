@@ -27,7 +27,7 @@ export default function Header() {
         </div>
         <nav className="flex flex-col space-y-4 p-4">
           <Link
-            className="block opacity-60 flex items-center space-x-2"
+            className="opacity-50 flex items-center space-x-2"
             activeProps={{ className: `opacity-100`}}
             activeOptions={{ exact: true }}
             to="/"
@@ -37,7 +37,7 @@ export default function Header() {
             <span>Home</span>
           </Link>
           <Link
-            className="opacity-60 flex items-center space-x-2"
+            className="opacity-50 flex items-center space-x-2"
             activeProps={{ className: `opacity-100` }}
             activeOptions={{ exact: true }}
             to="/currency-rate"
@@ -60,13 +60,13 @@ export default function Header() {
       {/* Desktop nav */}
       <nav className="hidden md:flex flex-row text-white">
         <div className="px-2 font-bold">
-          <Link className="opacity-50" activeProps={{ className: `opacity-100` }} to="/">
+          <Link className="block opacity-50" activeProps={{ className: `opacity-100` }} to="/">
             <Home />
           </Link>
         </div>
 
         <div className="px-2 font-semibold uppercase">
-          <Link className="opacity-60" activeProps={{ className: `opacity-100` }} to="/currency-rate">
+          <Link className="block opacity-60" activeProps={{ className: `opacity-100` }} to="/currency-rate">
             Currency rate
           </Link>
         </div>

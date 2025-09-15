@@ -1,7 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Banknote, Calculator, Globe, Plus, Target } from 'lucide-react'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './components/DomainSubscriptions/DomainForm'
@@ -25,6 +41,40 @@ import {
 } from '@/store/subscriptionStore'
 import { Types, useCalculatorUtils } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
+
+import { cloneElement } from 'react'
+import { GripVertical } from 'lucide-react'
+
+const SortableItem = ({ id, children }: { id: string, children: ReactNode }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
+
+  // Clone the child element to add the drag handle props
+  const childWithProps = children ? cloneElement(children as React.ReactElement, {
+    ...attributes,
+    ...listeners,
+  }) : null;
+
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <div className="absolute top-1 right-1 z-10 cursor-grab" {...attributes} {...listeners}>
+        <GripVertical className="text-white/50" />
+      </div>
+      {childWithProps}
+    </div>
+  );
+}
 
 const SubscriptionCalculator = () => {
   // NOTE: STORE
@@ -50,6 +100,27 @@ const SubscriptionCalculator = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [editingSubscription, setEditingSubscription] =
     useState<ISubscription | null>(null)
+
+  const [rightColumnItems, setRightColumnItems] = useState(['subscriptions', 'rates', 'domains', 'summary']);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setRightColumnItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
 
   useEffect(() => {
@@ -95,13 +166,39 @@ const SubscriptionCalculator = () => {
     updateShowDomainStatus(!showDomainStatus)
   }
 
+  const rightColumnComponents: { [key: string]: ReactNode } = {
+    subscriptions: currentRates && (
+      <Subscriptions
+        triggerSettingshandler={() => setShowAddForm(true)}
+        projectionYears={projectionYears}
+        editSubscription={handleEditClick}
+        removeSubscription={removeSubscription}
+        currentRates={currentRates}
+        showAddFormhandler={() => setShowAddForm(true)}
+      />
+    ),
+    rates: showRatesStatus && currentRates && (
+      <RatesElement hidePanelHeading={false} isPage={false} />
+    ),
+    domains: showDomainStatus && (
+      <DomainSubscriptions
+        hideAddButton={true}
+        removeDomainhandler={removeDomainFromAction}
+        triggerDomainModal={() => setShowDomainForm(true)}
+      />
+    ),
+    summary: <SummaryBySubscriptions projectionYears={projectionYears} />,
+  };
+
   return (
-    <div className="p-4">
+    <main className="p-4">
+
       <div className="text-center mt-6">
         <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
             <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
         </div>
       </div>
+
       {/* Background Elements */}
       <div className={`absolute min-h-screen md:inset-0`}>
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -146,7 +243,7 @@ const SubscriptionCalculator = () => {
 
           {/* SECTION: Left Column - Controls */}
           {settingsPanelStatus && (
-            <div className={`lg:col-span-1 space-y-6`}>
+            <aside id='calc_left__column' className={`lg:col-span-1 space-y-6`}>
               {/* Currency & Projection Settings */}
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
                 <div className="flex items-center justify-between">
@@ -241,41 +338,31 @@ const SubscriptionCalculator = () => {
                 triggerDomainModal={() => setShowDomainForm(!showDomainForm)}
               />
 
-            </div>
+            </aside>
           )}
 
           {/* SECTION: Right Column - Results */}
-          <div
+          <section
+            id='calc_right__column'
             className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}
           >
-
-            {currentRates &&
-              <Subscriptions
-                triggerSettingshandler={() => setShowAddForm(true)}
-                projectionYears={projectionYears}
-                editSubscription={handleEditClick}
-                removeSubscription={removeSubscription}
-                currentRates={currentRates}
-                showAddFormhandler={() => setShowAddForm(true)}
-              />
-            }
-
-            {showRatesStatus && currentRates && (
-              <RatesElement hidePanelHeading={false} isPage={false}  />
-            )}
-
-            {showDomainStatus &&
-              (<DomainSubscriptions
-                hideAddButton={true}
-                removeDomainhandler={removeDomainFromAction}
-                triggerDomainModal={() => setShowDomainForm(true)}
-              />)
-            }
-
-            <SummaryBySubscriptions
-              projectionYears={projectionYears}
-            />
-          </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={rightColumnItems}
+                strategy={verticalListSortingStrategy}
+              >
+                {rightColumnItems.map(id => (
+                  <SortableItem key={id} id={id}>
+                    {rightColumnComponents[id]}
+                  </SortableItem>
+                ))}
+              </SortableContext>
+            </DndContext>
+          </section>
         </div>
       </section>
 
@@ -304,9 +391,9 @@ const SubscriptionCalculator = () => {
         onSave={handleSaveSubscription}
       />
 
-    </div>
+    </main>
   )
-}//
+}
 
 export default SubscriptionCalculator 
 
