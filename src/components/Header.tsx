@@ -5,9 +5,11 @@ import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { Currency, Home, Menu, X, LogOut, Target, Banknote, Globe, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
+import { useUser } from '@/lib/utils'
 
 export default function Header() {
-
+  const { data: user } = useUser()
+  console.log("🚀 ~ Header ~ user:", user)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -79,37 +81,41 @@ export default function Header() {
       )}
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex flex-row items-center justify-between text-white">
+      {user && (
+        <nav className="hidden md:flex flex-row items-center justify-between text-white">
 
-        <div className='flex items-center gap-x-4'>
-          <div className="font-semibold">
-            <Link className="block opacity-50" activeProps={{ className: `opacity-100` }} to="/">
-              <Home />
-            </Link>
+          <div className='flex items-center gap-x-4'>
+            <div className="font-semibold">
+              <Link className="block opacity-50" activeProps={{ className: `opacity-100` }} to="/">
+                <Home />
+              </Link>
+            </div>
+
+            <div className="font-semibold uppercase">
+              <Link className="block opacity-60" activeProps={{ className: `opacity-100` }} to="/currency-rate">
+                Currency rate
+              </Link>
+            </div>
+
           </div>
 
-          <div className="font-semibold uppercase">
-            <Link className="block opacity-60" activeProps={{ className: `opacity-100` }} to="/currency-rate">
-              Currency rate
-            </Link>
+          <div className='flex items-center gap-x-6'>
+
+            <PanelsStatus />
+
+            <button
+              onClick={handleLogout}
+              className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
+            >
+              <LogOut />
+            </button>
+
           </div>
 
-        </div>
+        </nav>
+      )}
 
-        <div className='flex items-center gap-x-6'>
 
-          <PanelsStatus />
-
-          <button
-            onClick={handleLogout}
-            className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
-          >
-            <LogOut />
-          </button>
-
-        </div>
-
-      </nav>
     </header>
   )
 }

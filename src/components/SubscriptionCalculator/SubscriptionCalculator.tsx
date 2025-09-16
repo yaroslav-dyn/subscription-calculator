@@ -208,29 +208,6 @@ const SubscriptionCalculator = () => {
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
       </div>
 
-      {/* <div className="flex flex-row md:flex-row items-center gap-4 md:gap-4 fixed z-50 top-2 md:top-4 right-2 md:right-4">
-        <Target
-          size={30}
-          onClick={triggerSettingsPanel}
-          opacity={!settingsPanelStatus ? '0.5' : '1'}
-          className="text-white cursor-pointer hover:opacity-100"
-        />
-
-        <Banknote
-          size={34}
-          onClick={triggerRatesPanel}
-          opacity={!showRatesStatus ? '0.5' : '1'}
-          className="text-white cursor-pointer hover:opacity-100"
-        />
-
-        <Globe
-          size={26}
-          onClick={triggerDomainPanel}
-          opacity={!showDomainStatus ? '0.5' : '1'}
-          className="text-white cursor-pointer hover:opacity-100"
-        />
-      </div> */}
-
       <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
