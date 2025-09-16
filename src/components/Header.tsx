@@ -3,13 +3,12 @@ import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
 // import { subscriptionStore, updateSettingsPanelStatus, updateShowDomainStatus, updateShowRatesStatus } from '@/store/subscriptionStore'
 import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { Currency, Home, Menu, X, LogOut, Target, Banknote, Globe } from 'lucide-react'
+import { Currency, Home, Menu, X, LogOut, Target, Banknote, Globe, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Header() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -117,27 +116,18 @@ export default function Header() {
 
 const PanelsStatus = ({ classes = '' }: { classes?: string }) => {
 
-  const { rates, domains, settings } = useStore(settingsStore, (state) => (state))
-
-  const triggerSettingsPanel = () => {
-    updateSettingsPanelStatus('settings', !settings)
-  }
-
-  const triggerRatesPanel = () => {
-    updateSettingsPanelStatus('rates', !rates)
-  }
-
-  const triggerDomainPanel = () => {
-    updateSettingsPanelStatus('domains', !domains)
-  }
+  const { settings, rates, domains, summary } = useStore(settingsStore, (state) => (state))
 
   return (
     <div className={`flex flex-row md:flex-row items-center gap-4 md:gap-4 ${classes}`}>
-      <Target size={30} onClick={triggerSettingsPanel} opacity={!settings ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Target size={30} onClick={() => updateSettingsPanelStatus('settings', !settings)} opacity={!settings ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
 
-      <Banknote size={34} onClick={triggerRatesPanel} opacity={!rates ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Banknote size={34} onClick={() => updateSettingsPanelStatus('rates', !rates)} opacity={!rates ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
 
-      <Globe size={26} onClick={triggerDomainPanel} opacity={!domains ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Globe size={26} onClick={() => updateSettingsPanelStatus('domains', !domains)} opacity={!domains ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+
+      <TrendingUp size={26} onClick={() => updateSettingsPanelStatus('summary', !summary)} opacity={!summary ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+
     </div>
   );
 }

@@ -13,17 +13,14 @@ interface SubscriptionStoreState {
   domains: Array<IDomain>
   displayCurrency: TCurrency
   newDomain: IDomain
-  // settingsPanelStatus: boolean
-  // showRatesStatus: boolean
-  // showDomainStatus: boolean
 }
 
 const initialDomainState: IDomain = {
   name: '',
   provider: 'Cloudflare',
-  expiryDate: '',
-  renewalCost: '',
-  autoRenewal: false,
+  expiry_date: '',
+  renewal_cost: '',
+  auto_renewal: false,
 }
 
 // Define the default state
@@ -33,9 +30,6 @@ const defaultState: SubscriptionStoreState = {
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
-  // settingsPanelStatus: true,
-  // showRatesStatus: false,
-  // showDomainStatus: false,
 }
 
 // Create the store with the initial state
@@ -193,31 +187,152 @@ export const setNewDomain = (domain: IDomain) => {
     newDomain: domain,
   }))
 }
+
 /**
- * Adds a new domain to the user's list.
+ * Fetches domains from Supabase and updates the store.
  */
-export const addDomain = () => {
-  subscriptionStore.setState((state) => {
-    const newDomain = {
-      ...state.newDomain,
-      id: (Date.now() + Math.random()).toString(),
-      renewalCost: state.newDomain.renewalCost || '0',
-    }
-    return {
-      ...state,
-      domains: [...state.domains, newDomain],
-      newDomain: initialDomainState, // Reset form
-    }
-  })
+export const fetchDomains = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('domains')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching domains:', error)
+    return
+  }
+
+  subscriptionStore.setState((state) => ({
+    ...state,
+    domains: data || [],
+  }))
 }
 
 /**
- * Removes a domain from the user's list by its id.
+ * Adds a new domain to Supabase and updates the store.
+ * @param domain The domain to add.
+ */
+export const addDomainToSupabase = async (domain: IDomain) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const domainToInsert = {
+    ...domain,
+    user_id: user.id,
+    renewal_cost: domain.renewal_cost || '0',
+  }
+
+  const { data, error } = await supabase
+    .from('domains')
+    .insert([domainToInsert])
+    .select()
+
+  if (error) {
+    console.error('Error adding domain:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: [...state.domains, data[0]],
+    }))
+  }
+}
+
+/**
+ * Removes a domain from Supabase and updates the store.
  * @param domainId The id of the domain to remove.
  */
-export const removeDomain = (domainId: string) => {
+export const removeDomainFromSupabase = async (domainId: string) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { error } = await supabase
+    .from('domains')
+    .delete()
+    .eq('id', domainId)
+
+  if (error) {
+    console.error('Error removing domain:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
     domains: state.domains.filter((d) => d.id !== domainId),
   }))
+}
+
+/**
+ * Updates an existing domain in Supabase and updates the store.
+ * @param domainId The id of the domain to update.
+ * @param updatedValues An object containing the properties to update.
+ */
+export const updateDomainInSupabase = async (
+  domainId: string,
+  updatedValues: Partial<IDomain>,
+) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('domains')
+    .update(updatedValues)
+    .eq('id', domainId)
+    .select()
+
+  if (error) {
+    console.error('Error updating domain:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: state.domains.map((d) =>
+        d.id === domainId ? data[0] : d,
+      ),
+    }))
+  }
+}
+
+/**
+ * Adds a new domain to the user's list and Supabase.
+ */
+export const addDomain = async () => {
+  const domainToAdd = subscriptionStore.state.newDomain
+  if (!domainToAdd.name) return
+
+  const newDomain = {
+    ...domainToAdd,
+    id: (Date.now() + Math.random()).toString(),
+    renewal_cost: domainToAdd.renewal_cost || '0',
+  }
+
+  await addDomainToSupabase(newDomain)
+
+  subscriptionStore.setState((state) => ({
+    ...state,
+    newDomain: initialDomainState, // Reset form
+  }))
+}
+
+/**
+ * Removes a domain from the user's list and Supabase by its id.
+ * @param domainId The id of the domain to remove.
+ */
+export const removeDomain = async (domainId: string) => {
+  await removeDomainFromSupabase(domainId)
 }

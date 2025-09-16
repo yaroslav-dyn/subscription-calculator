@@ -45,26 +45,26 @@ const DomainForm: React.FC<DomainFormProps> = ({
         <input
           type="number"
           placeholder="Renewal cost"
-          value={domain.renewalCost}
+          value={domain.renewal_cost}
           onChange={(e) =>
-            setDomain({ ...domain, renewalCost: e.target.value })
+            setDomain({ ...domain, renewal_cost: e.target.value })
           }
           className="flex-1 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
       <input
         type="date"
-        value={domain.expiryDate}
-        onChange={(e) => setDomain({ ...domain, expiryDate: e.target.value })}
+        value={domain.expiry_date}
+        onChange={(e) => setDomain({ ...domain, expiry_date: e.target.value })}
         className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
       <div className="flex items-center">
         <input
           type="checkbox"
           id="autoRenewal"
-          checked={domain.autoRenewal}
+          checked={domain.auto_renewal}
           onChange={(e) =>
-            setDomain({ ...domain, autoRenewal: e.target.checked })
+            setDomain({ ...domain, auto_renewal: e.target.checked })
           }
           className="mr-2"
         />

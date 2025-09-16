@@ -38,6 +38,7 @@ import {
   updateDisplayCurrency,
   updateSubscription as updateSubscriptionAction,
   fetchSubscriptions,
+  fetchDomains,
 } from '@/store/subscriptionStore'
 import { settingsStore, type SettingsStoreState } from '@/store/settingsStore'
 
@@ -123,6 +124,7 @@ const SubscriptionCalculator = () => {
 
   useEffect(() => {
     fetchSubscriptions()
+    fetchDomains()
   }, [])
 
   useEffect(() => {
@@ -145,7 +147,7 @@ const SubscriptionCalculator = () => {
   }
 
   const handleAddDomain = () => {
-    if (newDomain.name && newDomain.expiryDate) {
+    if (newDomain.name && newDomain.expiry_date) {
       addDomainToAction()
       setShowDomainForm(false)
     }
@@ -229,7 +231,7 @@ const SubscriptionCalculator = () => {
         />
       </div> */}
 
-      <section className="relative max-w-6xl mx-auto">
+      <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
             Subscription Cost Calculator

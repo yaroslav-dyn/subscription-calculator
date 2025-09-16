@@ -52,7 +52,7 @@ const DomainSubscriptions = ({
             <span className="font-medium">Renewal Alerts</span>
           </div>
           {getExpiringDomains(domains).map((domain) => {
-            const daysLeft = getDaysUntilExpiry(domain.expiryDate)
+            const daysLeft = getDaysUntilExpiry(domain.expiry_date)
             return (
               <div key={domain.id} className="text-sm text-white/90 mb-1">
                 <strong>{domain.name}</strong> expires in{' '}
@@ -70,7 +70,7 @@ const DomainSubscriptions = ({
 
       {!hideAddButton && (
         <button
-          onClick={triggerDomainModal}  
+          onClick={triggerDomainModal}
           className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-blue-500/30 to-teal-500/30 rounded-xl text-white hover:from-blue-500/40 hover:to-teal-500/40 transition-all duration-300 mb-4"
         >
           <Plus className="w-5 h-5 mr-2" />
@@ -82,7 +82,7 @@ const DomainSubscriptions = ({
       {hideAddButton && domains.length > 0 && (
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {domains.map((domain) => {
-            const daysLeft = getDaysUntilExpiry(domain.expiryDate)
+            const daysLeft = getDaysUntilExpiry(domain.expiry_date)
             const statusColor = getStatusColor(daysLeft)
             const statusBg = getStatusBg(daysLeft)
 
@@ -95,7 +95,7 @@ const DomainSubscriptions = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-white font-medium">{domain.name}</h4>
-                      {domain.autoRenewal && (
+                      {domain.auto_renewal && (
                         <span className="text-xs bg-green-500/30 text-green-300 px-2 py-1 rounded-full">
                           Auto
                         </span>
@@ -113,10 +113,10 @@ const DomainSubscriptions = ({
                               ? 'Expires Tomorrow!'
                               : `${daysLeft} days left`}
                       </span>
-                      {parseFloat(domain.renewalCost) > 0 && (
+                      {parseFloat(domain.renewal_cost) > 0 && (
                         <span className="text-white/60 text-sm">
                           {formatCurrency(
-                            parseFloat(domain.renewalCost),
+                            parseFloat(domain.renewal_cost),
                             displayCurrency,
                           )}
                           /year
