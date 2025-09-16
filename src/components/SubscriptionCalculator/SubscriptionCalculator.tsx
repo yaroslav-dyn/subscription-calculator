@@ -39,6 +39,8 @@ import {
   updateSubscription as updateSubscriptionAction,
   fetchSubscriptions,
 } from '@/store/subscriptionStore'
+import { settingsStore, type SettingsStoreState } from '@/store/settingsStore'
+
 import { Types, useCalculatorUtils } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
 import SortableItem from '../SortableDragWrapper'
@@ -47,13 +49,18 @@ const SubscriptionCalculator = () => {
   // NOTE: STORE
   const {
     popularServices,
-    settingsPanelStatus,
-    showRatesStatus,
-    showDomainStatus,
     displayCurrency,
     newDomain,
     // subscriptions
   } = useStore(subscriptionStore, (state) => state)
+
+  const { 
+    rates: showRatesStatus, 
+    domains: showDomainStatus, 
+    settings: settingsPanelStatus
+   } = useStore(settingsStore, (state) => (state))
+
+  const settingsStoreInstance = useStore(settingsStore, (state) => state)
 
   // NOTE: HOOKS
   const { formatCurrency, getAPIRates } = useCalculatorUtils()
@@ -334,9 +341,8 @@ const SubscriptionCalculator = () => {
           {/* SECTION: Right Column - Results */}
           <section
             id="calc_right__column"
-            className={`${
-              settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'
-            } space-y-6`}
+            className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'
+              } space-y-6`}
           >
             <DndContext
               sensors={sensors}
@@ -347,11 +353,15 @@ const SubscriptionCalculator = () => {
                 items={rightColumnItems}
                 strategy={verticalListSortingStrategy}
               >
-                {rightColumnItems.map((id) => (
-                  <SortableItem key={id} id={id}>
-                    {rightColumnComponents[id]}
-                  </SortableItem>
-                ))}
+                {rightColumnItems.map((id) => {
+                  if (settingsStoreInstance[id as keyof SettingsStoreState]) {
+                    return (
+                      <SortableItem key={id} id={id}>
+                        {rightColumnComponents[id]}
+                      </SortableItem>
+                    )
+                  }
+                })}
               </SortableContext>
             </DndContext>
           </section>

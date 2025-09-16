@@ -23,12 +23,14 @@ import App from './App.tsx'
 import SubscriptionCalculator from './components/SubscriptionCalculator'
 import CurrencyRate from './components/RatesElement'
 import NotFound from './components/404'
+import Footer from './components/Footer.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
     <main className="base__page-bg min-h-screen">
       <Header />
       <Outlet />
+      <Footer />
       {/* <TanStackRouterDevtools /> */}
     </main>
   ),

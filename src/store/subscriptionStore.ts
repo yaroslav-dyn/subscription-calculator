@@ -13,9 +13,9 @@ interface SubscriptionStoreState {
   domains: Array<IDomain>
   displayCurrency: TCurrency
   newDomain: IDomain
-  settingsPanelStatus: boolean
-  showRatesStatus: boolean
-  showDomainStatus: boolean
+  // settingsPanelStatus: boolean
+  // showRatesStatus: boolean
+  // showDomainStatus: boolean
 }
 
 const initialDomainState: IDomain = {
@@ -33,13 +33,14 @@ const defaultState: SubscriptionStoreState = {
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
-  settingsPanelStatus: true,
-  showRatesStatus: false,
-  showDomainStatus: false,
+  // settingsPanelStatus: true,
+  // showRatesStatus: false,
+  // showDomainStatus: false,
 }
 
 // Create the store with the initial state
 export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
+
 
 // --- Actions to manipulate the store ---
 
@@ -180,27 +181,6 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   }))
 }
 
-// SECTION: Panels showing status
-export const updateSettingsPanelStatus = (status: boolean) => {
-  subscriptionStore.setState((state) => ({
-    ...state,
-    settingsPanelStatus: status,
-  }))
-}
-
-export const updateShowRatesStatus = (status: boolean) => {
-  subscriptionStore.setState((state) => ({
-    ...state,
-    showRatesStatus: status,
-  }))
-}
-
-export const updateShowDomainStatus = (status: boolean) => {
-  subscriptionStore.setState((state) => ({
-    ...state,
-    showDomainStatus: status,
-  }))
-}
 
 // SECTION: Domains
 /**
