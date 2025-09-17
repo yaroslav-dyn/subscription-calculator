@@ -21,6 +21,7 @@ export const settingsStore = new Store<SettingsStoreState>(settingsStoreData)
 
 // Load persisted state from localStorage on initialization
 const persistedSettings = localStorage.getItem('settingsStore')
+
 if (persistedSettings) {
   try {
     settingsStore.setState(JSON.parse(persistedSettings))

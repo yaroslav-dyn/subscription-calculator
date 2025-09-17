@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Calculator, Plus, Target } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
 import { isMobile } from 'react-device-detect'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
@@ -18,6 +18,7 @@ import {
   // sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import CalculatorHeading from '@/components/CalculatorHeading'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './components/DomainSubscriptions/DomainForm'
@@ -42,11 +43,13 @@ import {
 } from '@/store/subscriptionStore'
 import { settingsStore, type SettingsStoreState } from '@/store/settingsStore'
 
-import { Types, useCalculatorUtils } from '@/lib/utils'
+import { Types, useAuthListener, useCalculatorUtils, useUser } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
 import SortableItem from '../SortableDragWrapper'
 
 const SubscriptionCalculator = () => {
+  useAuthListener()
+  const {data: user}  = useUser()
   // NOTE: STORE
   const {
     popularServices,
@@ -55,11 +58,6 @@ const SubscriptionCalculator = () => {
     // subscriptions
   } = useStore(subscriptionStore, (state) => state)
 
-  const { 
-    rates: showRatesStatus, 
-    domains: showDomainStatus, 
-    settings: settingsPanelStatus
-   } = useStore(settingsStore, (state) => (state))
 
   const settingsStoreInstance = useStore(settingsStore, (state) => state)
 
@@ -122,10 +120,11 @@ const SubscriptionCalculator = () => {
     }
   }
 
-  useEffect(() => {
-    fetchSubscriptions()
-    fetchDomains()
-  }, [])
+  useEffect(() => {    
+   user && (
+    fetchSubscriptions(user!),
+     fetchDomains(user!))
+  }, [user])
 
   useEffect(() => {
     const updateRates = async () => {
@@ -157,17 +156,6 @@ const SubscriptionCalculator = () => {
     removeSubscriptionFromAction(name)
   }
 
-  // const triggerSettingsPanel = () => {
-  //   updateSettingsPanelStatus(!settingsPanelStatus)
-  // }
-
-  // const triggerRatesPanel = () => {
-  //   updateShowRatesStatus(!showRatesStatus)
-  // }
-
-  // const triggerDomainPanel = () => {
-  //   updateShowDomainStatus(!showDomainStatus)
-  // }
 
   const rightColumnComponents: { [key: string]: ReactNode } = {
     subscriptions: currentRates && (
@@ -181,9 +169,9 @@ const SubscriptionCalculator = () => {
       />
     ),
     rates:
-      showRatesStatus &&
+      settingsStoreInstance.rates &&
       currentRates && <RatesElement hidePanelHeading={false} isPage={false} />,
-    domains: showDomainStatus && (
+    domains: settingsStoreInstance.domains && (
       <DomainSubscriptions
         hideAddButton={true}
         removeDomainhandler={removeDomainFromAction}
@@ -195,32 +183,22 @@ const SubscriptionCalculator = () => {
 
   return (
     <main className="p-4">
-      <div className="text-center mt-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
-          <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
-        </div>
-      </div>
 
       {/* Background Elements */}
-      <div className={`absolute min-h-screen md:inset-0 hidden xl:block`}>
+      <div className={`fixed min-h-screen md:inset-0 hidden xl:block`}>
+
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
       </div>
 
       <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Subscription Cost Calculator
-          </h1>
-          <p className="text-white/70">
-            Discover the true lifetime cost of your subscriptions
-          </p>
-        </div>
+
+        <CalculatorHeading  />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* SECTION: Left Column - Controls */}
-          {settingsPanelStatus && (
+          {settingsStoreInstance.settings && (
             <aside id="calc_left__column" className={`lg:col-span-1 space-y-6`}>
               {/* Currency & Projection Settings */}
               <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
@@ -320,7 +298,7 @@ const SubscriptionCalculator = () => {
           {/* SECTION: Right Column - Results */}
           <section
             id="calc_right__column"
-            className={`${settingsPanelStatus ? 'lg:col-span-2' : 'lg:col-span-3'
+            className={`${settingsStoreInstance.settings ? 'lg:col-span-2' : 'lg:col-span-3'
               } space-y-6`}
           >
             <DndContext

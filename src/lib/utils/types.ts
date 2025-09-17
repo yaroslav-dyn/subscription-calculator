@@ -11,3 +11,10 @@ export interface ISubscription {
   period: 'monthly' | 'yearly'
   currency: CurrencyValue 
 }
+
+
+export interface IMessageDrawerData {
+  status: boolean
+  message: string
+  type?: 'DEFAULT' | 'ERROR' | 'WARNING' | 'SUCCESS'
+}

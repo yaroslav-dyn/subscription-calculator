@@ -3,6 +3,7 @@ import { type IDomain, Types } from '@/lib/utils'
 import type { ISubscription } from '@/lib/utils/types'
 import { popularServices } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabaseClient'
+import type { User } from '@supabase/supabase-js'
 
 export type TCurrency = Types.CurrencyValue
 
@@ -41,10 +42,8 @@ export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 /**
  * Fetches subscriptions from Supabase and updates the store.
  */
-export const fetchSubscriptions = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export const fetchSubscriptions = async (user: User) => {
+
   if (!user) return
 
   const { data, error } = await supabase
@@ -191,10 +190,8 @@ export const setNewDomain = (domain: IDomain) => {
 /**
  * Fetches domains from Supabase and updates the store.
  */
-export const fetchDomains = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export const fetchDomains = async (user: User) => {
+
   if (!user) return
 
   const { data, error } = await supabase
