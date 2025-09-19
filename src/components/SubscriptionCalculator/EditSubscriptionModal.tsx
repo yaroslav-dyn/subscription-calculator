@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
-import type { ISubscription } from '@/store/subscriptionStore'
+import type { ISubscription } from '@/lib/utils/types'
+import type { Types } from '@/lib/utils'
 
 interface EditSubscriptionModalProps {
   isOpen: boolean
@@ -18,9 +19,9 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
   const [name, setName] = React.useState('')
   const [price, setPrice] = React.useState('')
   const [period, setPeriod] = React.useState<'monthly' | 'yearly'>('monthly')
-  const [currency, setCurrency] = React.useState<'USD' | 'EUR' | 'UAH'>('USD')
+  const [currency, setCurrency] = React.useState<Types.CurrencyValue>('USD')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (subscription) {
       setName(subscription.name)
       setPrice(subscription.price.toString())
@@ -50,7 +51,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
       <div className="bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white font-semibold text-lg">
-            Edit ISubscription
+            Edit Subscription
           </h3>
           <button
             onClick={onClose}

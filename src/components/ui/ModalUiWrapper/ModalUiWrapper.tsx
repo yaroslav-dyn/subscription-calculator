@@ -1,14 +1,15 @@
-import {  useEffect } from 'react'
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react'
 
 interface IModalUiWrapper {
+  isOpen: boolean
   children: ReactNode
 }
 
-const ModalUiWrapper = ({ children }: IModalUiWrapper) => {
-  useEffect(() => {
-    console.log(`ModalUiWrapper mounted`)
-  }, [])
+const ModalUiWrapper = ({ isOpen, children }: IModalUiWrapper) => {
+
+  if (!isOpen) {
+    return null
+  }
 
   return (
     <div className="ModalUiWrapper-component fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">

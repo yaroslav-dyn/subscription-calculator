@@ -2,26 +2,26 @@ export interface IDomain {
   id?: string
   name: string
   provider: string
-  expiryDate: string
-  renewalCost: string
-  autoRenewal: boolean
+  expiry_date: string
+  renewal_cost: string
+  auto_renewal: boolean
 }
 
 const getExpiringDomains = (domains: Array<IDomain>) => {
   return domains
     .filter((domain) => {
-      const daysLeft = getDaysUntilExpiry(domain.expiryDate)
+      const daysLeft = getDaysUntilExpiry(domain.expiry_date)
       return daysLeft <= 30 && daysLeft >= 0
     })
     .sort(
       (a, b) =>
-        getDaysUntilExpiry(a.expiryDate) - getDaysUntilExpiry(b.expiryDate),
+        getDaysUntilExpiry(a.expiry_date) - getDaysUntilExpiry(b.expiry_date),
     )
 }
 
-const getDaysUntilExpiry = (expiryDate: string) => {
+const getDaysUntilExpiry = (expiry_date: string) => {
   const today = new Date()
-  const expiry = new Date(expiryDate)
+  const expiry = new Date(expiry_date)
   const diffTime = expiry.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   return diffDays

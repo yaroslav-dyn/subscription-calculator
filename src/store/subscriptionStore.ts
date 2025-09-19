@@ -1,15 +1,10 @@
-import type { IDomain } from '@/lib/utils'
 import { Store } from '@tanstack/store'
+import { type IDomain, Types } from '@/lib/utils'
+import type { ISubscription } from '@/lib/utils/types'
+import { popularServices } from '@/lib/utils/constants'
+import { supabase } from '@/lib/supabaseClient'
 
-export type TCurrency = 'USD' | 'EUR' | 'UAH'
-
-// Define the shape of a subscription
-export interface ISubscription {
-  name: string
-  price: number
-  period: 'monthly' | 'yearly'
-  currency: TCurrency
-}
+export type TCurrency = Types.CurrencyValue
 
 // Define the shape of the store's state
 interface SubscriptionStoreState {
@@ -20,31 +15,12 @@ interface SubscriptionStoreState {
   newDomain: IDomain
 }
 
-// A list of popular services that can be used as suggestions
-const popularServices: Array<ISubscription> = [
-  { name: 'Netflix', price: 15.49, period: 'monthly', currency: 'USD' },
-  { name: 'Spotify', price: 10.99, period: 'monthly', currency: 'USD' },
-  { name: 'Disney+', price: 7.99, period: 'monthly', currency: 'USD' },
-  { name: 'Amazon Prime', price: 139, period: 'yearly', currency: 'USD' },
-  { name: 'Apple Music', price: 10.99, period: 'monthly', currency: 'USD' },
-  { name: 'YouTube Premium', price: 13.99, period: 'monthly', currency: 'USD' },
-  {
-    name: 'Adobe Creative Cloud',
-    price: 52.99,
-    period: 'monthly',
-    currency: 'USD',
-  },
-  { name: 'Microsoft 365', price: 69.99, period: 'yearly', currency: 'USD' },
-  { name: 'Dropbox', price: 9.99, period: 'monthly', currency: 'USD' },
-  { name: 'Canva Pro', price: 119.99, period: 'yearly', currency: 'USD' },
-]
-
 const initialDomainState: IDomain = {
   name: '',
   provider: 'Cloudflare',
-  expiryDate: '',
-  renewalCost: '',
-  autoRenewal: false,
+  expiry_date: '',
+  renewal_cost: '',
+  auto_renewal: false,
 }
 
 // Define the default state
@@ -56,54 +32,90 @@ const defaultState: SubscriptionStoreState = {
   newDomain: initialDomainState,
 }
 
-// Function to safely get the initial state from localStorage
-const getInitialState = (): SubscriptionStoreState => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const storedState = localStorage.getItem('subscription_store')
-    if (storedState) {
-      try {
-        // Merge the stored state with the default state to ensure all keys are present
-        return { ...defaultState, ...JSON.parse(storedState) }
-      } catch (error) {
-        console.error('Error parsing state from localStorage:', error)
-        return defaultState
-      }
-    }
-  }
-  return defaultState
-}
-
 // Create the store with the initial state
-export const subscriptionStore = new Store<SubscriptionStoreState>(
-  getInitialState(),
-)
+export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 
-// Subscribe to store changes to persist the entire state to localStorage
-subscriptionStore.subscribe(() => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const state = subscriptionStore.state
-    localStorage.setItem('subscription_store', JSON.stringify(state))
-  }
-})
 
 // --- Actions to manipulate the store ---
 
 /**
- * Adds a new subscription to the user's list.
- * @param subscription The subscription to add.
+ * Fetches subscriptions from Supabase and updates the store.
  */
-export const addSubscription = (subscription: ISubscription) => {
+export const fetchSubscriptions = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching subscriptions:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
-    subscriptions: [...state.subscriptions, subscription],
+    subscriptions: data || [],
   }))
 }
 
 /**
- * Removes a subscription from the user's list by its name.
+ * Adds a new subscription to the user's list and Supabase.
+ * @param subscription The subscription to add.
+ */
+export const addSubscription = async (subscription: ISubscription) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .insert([{ ...subscription, user_id: user.id }])
+    .select()
+
+  if (error) {
+    console.error('Error adding subscription:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: [...state.subscriptions, data[0]],
+    }))
+  }
+}
+
+/**
+ * Removes a subscription from the user's list and Supabase by its name.
  * @param subscriptionName The name of the subscription to remove.
  */
-export const removeSubscription = (subscriptionName: string) => {
+export const removeSubscription = async (subscriptionName: string) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const subToRemove = subscriptionStore.state.subscriptions.find(
+    (s) => s.name === subscriptionName,
+  )
+  if (!subToRemove) return
+
+  const { error } = await supabase
+    .from('subscriptions')
+    .delete()
+    .eq('id', subToRemove.id)
+
+  if (error) {
+    console.error('Error removing subscription:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
     subscriptions: state.subscriptions.filter(
@@ -113,20 +125,43 @@ export const removeSubscription = (subscriptionName: string) => {
 }
 
 /**
- * Updates an existing subscription.
+ * Updates an existing subscription in the user's list and Supabase.
  * @param subscriptionName The name of the subscription to update.
  * @param updatedValues An object containing the properties to update.
  */
-export const updateSubscription = (
+export const updateSubscription = async (
   subscriptionName: string,
   updatedValues: Partial<ISubscription>,
 ) => {
-  subscriptionStore.setState((state) => ({
-    ...state,
-    subscriptions: state.subscriptions.map((s) =>
-      s.name === subscriptionName ? { ...s, ...updatedValues } : s,
-    ),
-  }))
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const subToUpdate = subscriptionStore.state.subscriptions.find(
+    (s) => s.name === subscriptionName,
+  )
+  if (!subToUpdate) return
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .update(updatedValues)
+    .eq('id', subToUpdate.id)
+    .select()
+
+  if (error) {
+    console.error('Error updating subscription:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: state.subscriptions.map((s) =>
+        s.name === subscriptionName ? data[0] : s,
+      ),
+    }))
+  }
 }
 
 /**
@@ -140,6 +175,8 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   }))
 }
 
+
+// SECTION: Domains
 /**
  * Sets the new domain form state.
  * @param domain The new domain state.
@@ -152,30 +189,150 @@ export const setNewDomain = (domain: IDomain) => {
 }
 
 /**
- * Adds a new domain to the user's list.
+ * Fetches domains from Supabase and updates the store.
  */
-export const addDomain = () => {
-  subscriptionStore.setState((state) => {
-    const newDomain = {
-      ...state.newDomain,
-      id: new String(Date.now() + Math.random()),
-      renewalCost: parseFloat(state.newDomain.renewalCost) || 0,
-    }
-    return {
-      ...state,
-      domains: [...state.domains, newDomain],
-      newDomain: initialDomainState, // Reset form
-    }
-  })
+export const fetchDomains = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('domains')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching domains:', error)
+    return
+  }
+
+  subscriptionStore.setState((state) => ({
+    ...state,
+    domains: data || [],
+  }))
 }
 
 /**
- * Removes a domain from the user's list by its id.
+ * Adds a new domain to Supabase and updates the store.
+ * @param domain The domain to add.
+ */
+export const addDomainToSupabase = async (domain: IDomain) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const domainToInsert = {
+    ...domain,
+    user_id: user.id,
+    renewal_cost: domain.renewal_cost || '0',
+  }
+
+  const { data, error } = await supabase
+    .from('domains')
+    .insert([domainToInsert])
+    .select()
+
+  if (error) {
+    console.error('Error adding domain:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: [...state.domains, data[0]],
+    }))
+  }
+}
+
+/**
+ * Removes a domain from Supabase and updates the store.
  * @param domainId The id of the domain to remove.
  */
-export const removeDomain = (domainId: string) => {
+export const removeDomainFromSupabase = async (domainId: string) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { error } = await supabase
+    .from('domains')
+    .delete()
+    .eq('id', domainId)
+
+  if (error) {
+    console.error('Error removing domain:', error)
+    return
+  }
+
   subscriptionStore.setState((state) => ({
     ...state,
     domains: state.domains.filter((d) => d.id !== domainId),
   }))
+}
+
+/**
+ * Updates an existing domain in Supabase and updates the store.
+ * @param domainId The id of the domain to update.
+ * @param updatedValues An object containing the properties to update.
+ */
+export const updateDomainInSupabase = async (
+  domainId: string,
+  updatedValues: Partial<IDomain>,
+) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('domains')
+    .update(updatedValues)
+    .eq('id', domainId)
+    .select()
+
+  if (error) {
+    console.error('Error updating domain:', error)
+    return
+  }
+
+  if (data) {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: state.domains.map((d) =>
+        d.id === domainId ? data[0] : d,
+      ),
+    }))
+  }
+}
+
+/**
+ * Adds a new domain to the user's list and Supabase.
+ */
+export const addDomain = async () => {
+  const domainToAdd = subscriptionStore.state.newDomain
+  if (!domainToAdd.name) return
+
+  const newDomain = {
+    ...domainToAdd,
+    id: (Date.now() + Math.random()).toString(),
+    renewal_cost: domainToAdd.renewal_cost || '0',
+  }
+
+  await addDomainToSupabase(newDomain)
+
+  subscriptionStore.setState((state) => ({
+    ...state,
+    newDomain: initialDomainState, // Reset form
+  }))
+}
+
+/**
+ * Removes a domain from the user's list and Supabase by its id.
+ * @param domainId The id of the domain to remove.
+ */
+export const removeDomain = async (domainId: string) => {
+  await removeDomainFromSupabase(domainId)
 }

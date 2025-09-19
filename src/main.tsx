@@ -12,7 +12,6 @@ import {
 
 import TanStackQueryDemo from './routes/demo.tanstack-query.tsx'
 import StoreDemo from './routes/demo.store.tsx'
-
 import Header from './components/Header'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
@@ -22,15 +21,18 @@ import reportWebVitals from './reportWebVitals.ts'
 
 import App from './App.tsx'
 import SubscriptionCalculator from './components/SubscriptionCalculator'
+import CurrencyRate from './components/RatesElement'
 import NotFound from './components/404'
+import Footer from './components/Footer.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
-    <div className="base__page-bg min-h-screen">
+    <main className="base__page-bg min-h-screen">
       <Header />
       <Outlet />
+      <Footer />
       {/* <TanStackRouterDevtools /> */}
-    </div>
+    </main>
   ),
   notFoundComponent: () => <NotFound />,
 })
@@ -41,15 +43,11 @@ const indexRoute = createRoute({
   component: App,
 })
 
-const CalculatorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: SubscriptionCalculator,
-})
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  CalculatorRoute,
+  SubscriptionCalculator(rootRoute),
+  CurrencyRate(rootRoute),
   TanStackQueryDemo(rootRoute),
   StoreDemo(rootRoute),
 ])
