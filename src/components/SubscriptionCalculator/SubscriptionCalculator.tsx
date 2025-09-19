@@ -25,7 +25,7 @@ import DomainForm from './components/DomainSubscriptions/DomainForm'
 import SummaryBySubscriptions from './components/SummaryBySubscriptions'
 import DomainSubscriptions from './components/DomainSubscriptions'
 import type { ISubscription } from '@/lib/utils/types'
-import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
+import { useGetAPIRates } from '@/lib/utils/calculator.utils'
 import Subscriptions, {
   CustomSubscriptionForm,
 } from '@/components/SubscriptionCalculator/components/Subscriptions'
@@ -49,28 +49,24 @@ import SortableItem from '../SortableDragWrapper'
 
 const SubscriptionCalculator = () => {
   useAuthListener()
-  const {data: user}  = useUser()
+  const { data: user } = useUser()
   // NOTE: STORE
   const {
     popularServices,
     displayCurrency,
-    newDomain,
-    // subscriptions
+    newDomain
   } = useStore(subscriptionStore, (state) => state)
 
 
   const settingsStoreInstance = useStore(settingsStore, (state) => state)
+  const { data: currentRates, isLoading } = useGetAPIRates()
 
   // NOTE: HOOKS
-  const { formatCurrency, getAPIRates } = useCalculatorUtils()
+  const { formatCurrency } = useCalculatorUtils()
 
   const [showAddForm, setShowAddForm] = useState<boolean>(false)
   const [showDomainForm, setShowDomainForm] = useState<boolean>(false)
   const [projectionYears, setProjectionYears] = useState(5)
-  const [currentRates, setCurrentRates] = useState<
-    Record<string, CurrencyInfo> | undefined
-  >(undefined)
-
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [editingSubscription, setEditingSubscription] =
     useState<ISubscription | null>(null)
@@ -120,19 +116,19 @@ const SubscriptionCalculator = () => {
     }
   }
 
-  useEffect(() => {    
-   user && (
-    fetchSubscriptions(user!),
-     fetchDomains(user!))
+  useEffect(() => {
+    user && (
+      fetchSubscriptions(user!),
+      fetchDomains(user!))
   }, [user])
 
-  useEffect(() => {
-    const updateRates = async () => {
-      const res = await getAPIRates()
-      setCurrentRates(res)
-    }
-    updateRates()
-  }, [])
+  // useEffect(() => {
+  //   const updateRates = async () => {
+  //     const res = await getAPIRates()
+  //     setCurrentRates(res)
+  //   }
+  //   updateRates()
+  // }, [])
 
   const handleEditClick = (sub: ISubscription) => {
     setEditingSubscription(sub)
@@ -158,7 +154,7 @@ const SubscriptionCalculator = () => {
 
 
   const rightColumnComponents: { [key: string]: ReactNode } = {
-    subscriptions: currentRates && (
+    subscriptions: (
       <Subscriptions
         triggerSettingshandler={() => setShowAddForm(true)}
         projectionYears={projectionYears}
@@ -166,12 +162,13 @@ const SubscriptionCalculator = () => {
         removeSubscription={removeSubscription}
         currentRates={currentRates}
         showAddFormhandler={() => setShowAddForm(true)}
+        isLoading={isLoading}
       />
     ),
     rates:
       settingsStoreInstance.rates &&
-      currentRates && <RatesElement hidePanelHeading={false} isPage={false} />,
-    domains: settingsStoreInstance.domains && (
+      currentRates && <RatesElement hidePanelHeading={false} isPage={false} isLoading={isLoading} />,
+      domains: settingsStoreInstance.domains && (
       <DomainSubscriptions
         hideAddButton={true}
         removeDomainhandler={removeDomainFromAction}
@@ -184,17 +181,9 @@ const SubscriptionCalculator = () => {
   return (
     <main className="p-4">
 
-      {/* Background Elements */}
-      <div className={`fixed min-h-screen md:inset-0 hidden xl:block`}>
-
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-2000"></div>
-      </div>
-
       <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
 
-        <CalculatorHeading  />
+        <CalculatorHeading />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* SECTION: Left Column - Controls */}

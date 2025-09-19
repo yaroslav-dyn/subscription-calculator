@@ -6,11 +6,13 @@ import { useCalculatorUtils, useGetFullRates } from '@/lib/utils/calculator.util
 import { subscriptionStore } from '@/store/subscriptionStore'
 import getSymbolFromCurrency from 'currency-symbol-map'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
+import Preloader from '../ui/Preloader'
 
 interface IRatesTypes {
   classes?: string
   hidePanelHeading?: boolean
   isPage?: boolean
+  isLoading?: boolean
 }
 
 interface IDisplayRate {
@@ -19,10 +21,10 @@ interface IDisplayRate {
   symbol: string;
 }
 
-const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) => {
+const RatesElement = ({ classes = '', hidePanelHeading, isPage, isLoading }: IRatesTypes) => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
   const { formatCurrency } = useCalculatorUtils()
-  const { data: ratesBySymbol, isLoading, isError } = useGetFullRates(displayCurrency);
+  const { data: ratesBySymbol, isLoading: ratesLoading, isError } = useGetFullRates(displayCurrency);
   const [currencyFilter, setCurrencyFilter] = useState<string>('');
 
   const [coefficiant, setCoefficiant] = useState<string>('1');
@@ -70,7 +72,6 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
           </p>
         </>
       )
-
       }
       <div className={containerClasses}>
         <div className="flex flex-col md:flex-row md:items-center max-md:gap-y-4 md:justify-between mb-6">
@@ -121,6 +122,9 @@ const RatesElement = ({ classes = '', hidePanelHeading, isPage }: IRatesTypes) =
             ))}
         </section>
       </div>
+      <Preloader 
+        loading={isLoading || ratesLoading} 
+        classes={`${!isPage ? 'h-48' : 'h-[42vh] md:h-[50vh'}`} />
     </div>
   )
 }

@@ -77,9 +77,17 @@ const getFullRates = async (currency?: Types.CurrencyValue) => {
   return response.json()
 }
 
-export const useGetFullRates = (currency?: Types.CurrencyValue) => {
+export const useGetAPIRates = (currency?: Types.CurrencyValue) => {
   return useQuery({
     queryKey: ['rates', currency],
+    queryFn: () => getAPIRates(currency),
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+};
+
+export const useGetFullRates = (currency?: Types.CurrencyValue) => {
+  return useQuery({
+    queryKey: ['full-rates', currency],
     queryFn: () => getFullRates(currency),
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
@@ -91,7 +99,7 @@ const calculateYearlyCost = (
   actualCurrencies: Record<string, CurrencyInfo>
 ) => {
   // Convert subscription price to the base currency (USD)
-  const priceInBaseCurrency = sub.price * actualCurrencies[sub.currency].rate
+  const priceInBaseCurrency = sub.price * actualCurrencies?.[sub.currency].rate
   // Convert from base currency to the selected display currency
   const priceInDisplayCurrency =
     priceInBaseCurrency / currencies[displayCurrency].rate

@@ -17,4 +17,5 @@ export interface IMessageDrawerData {
   status: boolean
   message: string
   type?: 'DEFAULT' | 'ERROR' | 'WARNING' | 'SUCCESS'
+  countdown?: number
 }

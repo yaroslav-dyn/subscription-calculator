@@ -11,6 +11,7 @@ export type TCurrency = Types.CurrencyValue
 interface SubscriptionStoreState {
   popularServices: Array<ISubscription>
   subscriptions: Array<ISubscription>
+  isPendingSubscriptions: boolean
   domains: Array<IDomain>
   displayCurrency: TCurrency
   newDomain: IDomain
@@ -28,6 +29,7 @@ const initialDomainState: IDomain = {
 const defaultState: SubscriptionStoreState = {
   popularServices,
   subscriptions: [],
+  isPendingSubscriptions: false,
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
@@ -46,20 +48,30 @@ export const fetchSubscriptions = async (user: User) => {
 
   if (!user) return
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
+  let isLoading = true
+  let subsData: any[] = []
 
-  if (error) {
-    console.error('Error fetching subscriptions:', error)
-    return
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error fetching subscriptions:', error)
+      throw new Error(error.message || error?.details)
+    }
+    subsData = data
+  } catch (error: unknown) {
+    isLoading = false
+  } finally {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: subsData || [],
+      isPendingSubscriptions: isLoading
+    }))
   }
-
-  subscriptionStore.setState((state) => ({
-    ...state,
-    subscriptions: data || [],
-  }))
+ 
 }
 
 /**

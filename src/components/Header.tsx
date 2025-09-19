@@ -9,7 +9,6 @@ import { useUser } from '@/lib/utils'
 
 export default function Header() {
   const { data: user } = useUser()
-  console.log("🚀 ~ Header ~ user:", user)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = async () => {
