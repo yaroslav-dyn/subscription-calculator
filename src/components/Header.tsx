@@ -126,13 +126,13 @@ const PanelsStatus = ({ classes = '' }: { classes?: string }) => {
 
   return (
     <div className={`flex flex-row md:flex-row items-center gap-4 md:gap-4 ${classes}`}>
-      <Target size={30} onClick={() => updateSettingsPanelStatus('settings', !settings)} opacity={!settings ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Target size={30} onClick={() => updateSettingsPanelStatus('settings', !settings)} opacity={!settings ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
 
-      <Banknote size={34} onClick={() => updateSettingsPanelStatus('rates', !rates)} opacity={!rates ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Banknote size={34} onClick={() => updateSettingsPanelStatus('rates', !rates)} opacity={!rates ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
 
-      <Globe size={26} onClick={() => updateSettingsPanelStatus('domains', !domains)} opacity={!domains ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <Globe size={26} onClick={() => updateSettingsPanelStatus('domains', !domains)} opacity={!domains ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
 
-      <TrendingUp size={26} onClick={() => updateSettingsPanelStatus('summary', !summary)} opacity={!summary ? '0.5' : '1'} className="text-white cursor-pointer hover:opacity-100" />
+      <TrendingUp size={26} onClick={() => updateSettingsPanelStatus('summary', !summary)} opacity={!summary ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
 
     </div>
   );

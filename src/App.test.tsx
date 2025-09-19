@@ -1,10 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import App from './App.tsx'
+import SubscriptionCalculator from '@/components/SubscriptionCalculator/SubscriptionCalculator'
+import Auth from './components/Auth'
 
 describe('App', () => {
+
   test('renders', () => {
-    render(<App />)
-    expect(screen.getByText('Learn React')).toBeDefined()
+    render(<Auth>
+      <SubscriptionCalculator />
+    </Auth>)
+    expect(screen.getByText('Subscription Cost Calculator')).toBeDefined()
   })
+
 })

@@ -7,7 +7,7 @@ import { Store } from '@tanstack/store'
 
 
 interface UserStoreState {
-  currentUser: User | null
+  currentUser: User | null   
 }
 
 const userStoreData = {
@@ -50,7 +50,6 @@ export const useAuthListener = () => {
         queryClient.invalidateQueries({ queryKey: ['user'] })
       },
     )
-
     return () => {
       authListener?.subscription.unsubscribe()
     }

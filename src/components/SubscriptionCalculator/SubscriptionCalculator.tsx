@@ -78,20 +78,6 @@ const SubscriptionCalculator = () => {
     'summary',
   ])
 
-  // Load saved order from localStorage on mount
-  useEffect(() => {
-    const savedOrder = localStorage.getItem('subscriptionCalculatorRightColumnOrder')
-    if (savedOrder) {
-      try {
-        const parsedOrder = JSON.parse(savedOrder)
-        if (Array.isArray(parsedOrder) && parsedOrder.length > 0) {
-          setRightColumnItems(parsedOrder)
-        }
-      } catch (e) {
-        console.error('Failed to parse saved right column order from localStorage', e)
-      }
-    }
-  }, [])
 
   const sensors = useSensors(
     // useSensor(PointerSensor),
@@ -117,18 +103,27 @@ const SubscriptionCalculator = () => {
   }
 
   useEffect(() => {
+    // Load saved order from localStorage on mount
+    setPanelOrder()
     user && (
       fetchSubscriptions(user!),
       fetchDomains(user!))
   }, [user])
 
-  // useEffect(() => {
-  //   const updateRates = async () => {
-  //     const res = await getAPIRates()
-  //     setCurrentRates(res)
-  //   }
-  //   updateRates()
-  // }, [])
+
+  const setPanelOrder = () => {
+    const savedOrder = localStorage.getItem('subscriptionCalculatorRightColumnOrder')
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder)
+        if (Array.isArray(parsedOrder) && parsedOrder.length > 0) {
+          setRightColumnItems(parsedOrder)
+        }
+      } catch (e) {
+        console.error('Failed to parse saved right column order from localStorage', e)
+      }
+    }
+  }
 
   const handleEditClick = (sub: ISubscription) => {
     setEditingSubscription(sub)
