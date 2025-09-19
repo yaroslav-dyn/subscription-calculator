@@ -4,6 +4,7 @@ import type { ISubscription } from '@/lib/utils/types'
 import { useCalculatorUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
+import Preloader from '@/components/ui/Preloader'
 
 interface ISubscriptions {
   projectionYears: number
@@ -12,6 +13,7 @@ interface ISubscriptions {
   removeSubscription: (name: string) => void
   currentRates: Record<string, CurrencyInfo> | undefined
   showAddFormhandler: (status: boolean) => void
+  isLoading?: boolean
 }
 
 const Subscriptions = ({
@@ -20,8 +22,10 @@ const Subscriptions = ({
   editSubscription,
   removeSubscription,
   currentRates,
-  showAddFormhandler
+  showAddFormhandler,
+  isLoading
 }: ISubscriptions) => {
+  
   const { formatCurrency, calculateYearlyCost } = useCalculatorUtils()
 
   const { subscriptions, displayCurrency } = useStore(
@@ -29,9 +33,9 @@ const Subscriptions = ({
     (state) => state,
   )
   return (
-    <div className="Subscriptions-component">
+    <div className="Subscriptions-component relative">
       {/* Current Subscriptions */}
-      {subscriptions.length > 0 && (
+
         <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold flex items-center">
@@ -98,7 +102,7 @@ const Subscriptions = ({
             })}
           </div>
         </div>
-      )}
+
       {/* Empty State */}
       {subscriptions.length === 0 && (
         <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-12 shadow-xl text-center">
@@ -117,6 +121,9 @@ const Subscriptions = ({
           </button>
         </div>
       )}
+
+      {isLoading && <Preloader loading={isLoading} />}
+
     </div>
   )
 }

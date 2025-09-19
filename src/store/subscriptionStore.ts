@@ -3,6 +3,7 @@ import { type IDomain, Types } from '@/lib/utils'
 import type { ISubscription } from '@/lib/utils/types'
 import { popularServices } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabaseClient'
+import type { User } from '@supabase/supabase-js'
 
 export type TCurrency = Types.CurrencyValue
 
@@ -10,6 +11,7 @@ export type TCurrency = Types.CurrencyValue
 interface SubscriptionStoreState {
   popularServices: Array<ISubscription>
   subscriptions: Array<ISubscription>
+  isPendingSubscriptions: boolean
   domains: Array<IDomain>
   displayCurrency: TCurrency
   newDomain: IDomain
@@ -27,6 +29,7 @@ const initialDomainState: IDomain = {
 const defaultState: SubscriptionStoreState = {
   popularServices,
   subscriptions: [],
+  isPendingSubscriptions: false,
   domains: [],
   displayCurrency: 'USD',
   newDomain: initialDomainState,
@@ -41,26 +44,34 @@ export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 /**
  * Fetches subscriptions from Supabase and updates the store.
  */
-export const fetchSubscriptions = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export const fetchSubscriptions = async (user: User) => {
+
   if (!user) return
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
+  let isLoading = true
+  let subsData: any[] = []
 
-  if (error) {
-    console.error('Error fetching subscriptions:', error)
-    return
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error fetching subscriptions:', error)
+      throw new Error(error.message || error?.details)
+    }
+    subsData = data
+  } catch (error: unknown) {
+    isLoading = false
+  } finally {
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: subsData || [],
+      isPendingSubscriptions: isLoading
+    }))
   }
-
-  subscriptionStore.setState((state) => ({
-    ...state,
-    subscriptions: data || [],
-  }))
+ 
 }
 
 /**
@@ -191,10 +202,8 @@ export const setNewDomain = (domain: IDomain) => {
 /**
  * Fetches domains from Supabase and updates the store.
  */
-export const fetchDomains = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export const fetchDomains = async (user: User) => {
+
   if (!user) return
 
   const { data, error } = await supabase
