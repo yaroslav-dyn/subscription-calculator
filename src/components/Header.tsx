@@ -1,10 +1,20 @@
-import { supabase } from '@/lib/supabaseClient'
-import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
 // import { subscriptionStore, updateSettingsPanelStatus, updateShowDomainStatus, updateShowRatesStatus } from '@/store/subscriptionStore'
 import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { Currency, Home, Menu, X, LogOut, Target, Banknote, Globe, TrendingUp } from 'lucide-react'
+import {
+  Banknote,
+  Currency,
+  Globe,
+  Home,
+  LogOut,
+  Menu,
+  Target,
+  TrendingUp,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
+import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
+import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/lib/utils'
 
 export default function Header() {
@@ -26,26 +36,29 @@ export default function Header() {
             </button>
           </div>
 
-          {/*SECTION: Mobile Nav */}
+          {/* SECTION: Mobile Nav */}
           <div
-            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-              }`}
+            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${
+              isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
           >
-            <div className='flex flex-col justify-between min-h-full'>
+            <div className="flex flex-col justify-between min-h-full">
               <div className="flex items-center justify-between p-4">
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50"
                 >
                   <LogOut />
-
                 </button>
-                <button onClick={() => setIsMenuOpen(false)} className="text-white">
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-white"
+                >
                   <X size={28} />
                 </button>
               </div>
 
-              <nav className="flex-1 flex flex-col space-y-4 p-4">
+              <nav className="flex-1 flex flex-col space-y-6 p-4">
                 <Link
                   className="opacity-50 flex items-center space-x-2"
                   activeProps={{ className: `opacity-100` }}
@@ -57,7 +70,7 @@ export default function Header() {
                   <span>Home</span>
                 </Link>
                 <Link
-                  className="opacity-50 flex items-center"
+                  className="opacity-50 flex items-center space-x-2"
                   activeProps={{ className: `opacity-100` }}
                   activeOptions={{ exact: true }}
                   to="/currency-rate"
@@ -68,9 +81,11 @@ export default function Header() {
                 </Link>
               </nav>
 
-              <PanelsStatus classes="mb-4 justify-around" />
+              <div>
+                <hr className="my-4 border-amber-100/50" />
+                <PanelsStatus classes="mb-4 justify-around" />
+              </div>
             </div>
-
           </div>
 
           {/* Overlay */}
@@ -81,26 +96,31 @@ export default function Header() {
             ></div>
           )}
 
-          {/*SECTION Desktop nav */}
+          {/* SECTION Desktop nav */}
           <nav className="hidden md:flex flex-row items-center justify-between text-white">
-
-            <div className='flex items-center gap-x-4'>
+            <div className="flex items-center gap-x-4">
               <div className="font-semibold">
-                <Link className="block opacity-50" activeProps={{ className: `opacity-100` }} to="/">
+                <Link
+                  className="block opacity-50"
+                  activeProps={{ className: `opacity-100` }}
+                  to="/"
+                >
                   <Home />
                 </Link>
               </div>
 
               <div className="font-semibold uppercase">
-                <Link className="block opacity-60" activeProps={{ className: `opacity-100` }} to="/currency-rate">
+                <Link
+                  className="block opacity-60"
+                  activeProps={{ className: `opacity-100` }}
+                  to="/currency-rate"
+                >
                   Currency rate
                 </Link>
               </div>
-
             </div>
 
-            <div className='flex items-center gap-x-6'>
-
+            <div className="flex items-center gap-x-6">
               <PanelsStatus />
 
               <button
@@ -109,11 +129,8 @@ export default function Header() {
               >
                 <LogOut />
               </button>
-
             </div>
-
           </nav>
-
         </>
       )}
     </header>
@@ -121,19 +138,42 @@ export default function Header() {
 }
 
 const PanelsStatus = ({ classes = '' }: { classes?: string }) => {
-
-  const { settings, rates, domains, summary } = useStore(settingsStore, (state) => (state))
+  const { settings, rates, domains, summary } = useStore(
+    settingsStore,
+    (state) => state,
+  )
 
   return (
-    <div className={`flex flex-row md:flex-row items-center gap-4 md:gap-4 ${classes}`}>
-      <Target size={30} onClick={() => updateSettingsPanelStatus('settings', !settings)} opacity={!settings ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
+    <div
+      className={`flex flex-row md:flex-row items-center gap-4 md:gap-4 ${classes}`}
+    >
+      <Target
+        size={30}
+        onClick={() => updateSettingsPanelStatus('settings', !settings)}
+        opacity={!settings ? '0.5' : '1'}
+        className="text-white cursor-pointer hover:scale-110"
+      />
 
-      <Banknote size={34} onClick={() => updateSettingsPanelStatus('rates', !rates)} opacity={!rates ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
+      <Banknote
+        size={34}
+        onClick={() => updateSettingsPanelStatus('rates', !rates)}
+        opacity={!rates ? '0.5' : '1'}
+        className="text-white cursor-pointer hover:scale-110"
+      />
 
-      <Globe size={26} onClick={() => updateSettingsPanelStatus('domains', !domains)} opacity={!domains ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
+      <Globe
+        size={26}
+        onClick={() => updateSettingsPanelStatus('domains', !domains)}
+        opacity={!domains ? '0.5' : '1'}
+        className="text-white cursor-pointer hover:scale-110"
+      />
 
-      <TrendingUp size={26} onClick={() => updateSettingsPanelStatus('summary', !summary)} opacity={!summary ? '0.5' : '1'} className="text-white cursor-pointer hover:scale-110" />
-
+      <TrendingUp
+        size={26}
+        onClick={() => updateSettingsPanelStatus('summary', !summary)}
+        opacity={!summary ? '0.5' : '1'}
+        className="text-white cursor-pointer hover:scale-110"
+      />
     </div>
-  );
+  )
 }

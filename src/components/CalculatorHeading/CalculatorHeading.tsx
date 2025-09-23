@@ -1,4 +1,5 @@
-import { Calculator } from 'lucide-react';
+// import { Calculator } from 'lucide-react'
+import appLogo from '../../logo_opt.png'
 
 interface HeadingCalculatorTypes {
   heading?: string
@@ -6,16 +7,17 @@ interface HeadingCalculatorTypes {
   classes?: string
 }
 
-export const CalculatorHeading = (
-  { heading = '', slogan = '', classes = '' }:
-    HeadingCalculatorTypes
-
-) => {
+export const CalculatorHeading = ({
+  heading = '',
+  slogan = '',
+  classes = '',
+}: HeadingCalculatorTypes) => {
   return (
     <div className={`calc_heading ${classes}`}>
       <div className="text-center mt-6">
         <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
-          <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          {/* <Calculator className="w-8 h-8 md:w-10 md:h-10 text-white" /> */}
+          <img src={appLogo} alt="app logo" />
         </div>
       </div>
 
@@ -24,7 +26,9 @@ export const CalculatorHeading = (
           {heading ? heading : 'Subscription Cost Calculator'}
         </h1>
         <p className="text-white/70">
-          {slogan ? slogan : 'Discover the true lifetime cost of your subscriptions'}
+          {slogan
+            ? slogan
+            : 'Discover the true lifetime cost of your subscriptions'}
         </p>
       </div>
     </div>

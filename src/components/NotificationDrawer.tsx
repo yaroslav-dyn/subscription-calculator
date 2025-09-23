@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { notificationStore, clearNotification } from '@/store/notificationStore'
+import React, { useEffect, useRef, useState } from 'react'
+import { clearNotification, notificationStore } from '@/store/notificationStore'
 
 const NotificationDrawer: React.FC = () => {
   const [notification, setNotification] = useState(notificationStore.state)
@@ -20,9 +20,12 @@ const NotificationDrawer: React.FC = () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
-      timerRef.current = setTimeout(() => {
-        clearNotification()
-      }, (notification.countdown ?? 4) * 1000)
+      timerRef.current = setTimeout(
+        () => {
+          clearNotification()
+        },
+        (notification.countdown ?? 4) * 1000,
+      )
     }
     return () => {
       if (timerRef.current) {

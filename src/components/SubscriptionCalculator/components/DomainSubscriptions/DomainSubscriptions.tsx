@@ -12,7 +12,7 @@ interface IDomainSubscriptions {
 const DomainSubscriptions = ({
   hideAddButton,
   removeDomainhandler,
-  triggerDomainModal
+  triggerDomainModal,
 }: IDomainSubscriptions) => {
   const {
     getDaysUntilExpiry,

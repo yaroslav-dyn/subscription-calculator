@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useState } from 'react'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabaseClient'
 import CalculatorHeading from '@/components/CalculatorHeading'
 import { setNotification } from '@/store/notificationStore'
 import Preloader from '@/components/ui/Preloader'
-
 
 export const Auth = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
@@ -12,7 +11,6 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
-
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -43,7 +41,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         setNotification({
           type: 'SUCCESS',
           status: true,
-          message: 'Sign up successful! Please sign in.'
+          message: 'Sign up successful! Please sign in.',
         })
         setIsSignUp(false) // Switch to sign in form
       } else {
@@ -59,13 +57,12 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         type: 'ERROR',
         status: true,
         message: error.error_description || error.message,
-        countdown: 100
+        countdown: 100,
       })
     } finally {
       setLoading(false)
     }
   }
-
 
   // if (loading) {
   //   return <div className="text-white text-center p-4 min-h-screen">Loading...</div>
@@ -73,8 +70,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return (
-      <div className='min-h-[calc(100vh-118px)] flex flex-col justify-center gap-y-4'>
-
+      <div className="min-h-[calc(100vh-118px)] flex flex-col justify-center gap-y-4">
         {/* Background Elements */}
         <div className={`fixed min-h-screen md:inset-0 hidden xl:block`}>
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -129,9 +125,5 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
     )
   }
 
-  return (
-    <div>
-      {children}
-    </div>
-  )
+  return <div>{children}</div>
 }

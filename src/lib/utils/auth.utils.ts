@@ -1,17 +1,16 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabaseClient'
 import { useEffect } from 'react'
 
-import type { User } from '@supabase/supabase-js'
 import { Store } from '@tanstack/store'
-
+import type { User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabaseClient'
 
 interface UserStoreState {
-  currentUser: User | null   
+  currentUser: User | null
 }
 
 const userStoreData = {
-  currentUser: null
+  currentUser: null,
 }
 
 export const userStore = new Store<UserStoreState>(userStoreData)
@@ -36,7 +35,7 @@ export const useUser = () => {
   })
   userStore.setState((state) => ({
     ...state,
-    user
+    user,
   }))
   return user
 }
@@ -44,12 +43,10 @@ export const useUser = () => {
 export const useAuthListener = () => {
   const queryClient = useQueryClient()
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      () => {  
-        // Invalidate user query to refetch
-        queryClient.invalidateQueries({ queryKey: ['user'] })
-      },
-    )
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      // Invalidate user query to refetch
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    })
     return () => {
       authListener?.subscription.unsubscribe()
     }

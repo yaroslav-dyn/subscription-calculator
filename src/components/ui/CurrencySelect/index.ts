@@ -1,3 +1,3 @@
-import CurrencySelectElement from './CurrencySelect';
+import CurrencySelectElement from './CurrencySelect'
 
-export default CurrencySelectElement;
+export default CurrencySelectElement

@@ -8,7 +8,9 @@ const defaultNotification: IMessageDrawerData = {
   countdown: 4,
 }
 
-export const notificationStore = new Store<IMessageDrawerData>(defaultNotification)
+export const notificationStore = new Store<IMessageDrawerData>(
+  defaultNotification,
+)
 
 export function setNotification(data: IMessageDrawerData) {
   notificationStore.setState(data)
