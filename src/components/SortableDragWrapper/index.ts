@@ -1,3 +1,3 @@
-import SortableDragWrapper from './SortableDragWrapper';
+import SortableDragWrapper from './SortableDragWrapper'
 
-export default SortableDragWrapper;
+export default SortableDragWrapper

@@ -1,9 +1,9 @@
 import { Store } from '@tanstack/store'
-import { type IDomain, Types } from '@/lib/utils'
+import type { IDomain, Types  } from '@/lib/utils';
 import type { ISubscription } from '@/lib/utils/types'
+import type { User } from '@supabase/supabase-js'
 import { popularServices } from '@/lib/utils/constants'
 import { supabase } from '@/lib/supabaseClient'
-import type { User } from '@supabase/supabase-js'
 
 export type TCurrency = Types.CurrencyValue
 
@@ -38,18 +38,16 @@ const defaultState: SubscriptionStoreState = {
 // Create the store with the initial state
 export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 
-
 // --- Actions to manipulate the store ---
 
 /**
  * Fetches subscriptions from Supabase and updates the store.
  */
 export const fetchSubscriptions = async (user: User) => {
-
   if (!user) return
 
   let isLoading = true
-  let subsData: any[] = []
+  let subsData: Array<any> = []
 
   try {
     const { data, error } = await supabase
@@ -68,10 +66,9 @@ export const fetchSubscriptions = async (user: User) => {
     subscriptionStore.setState((state) => ({
       ...state,
       subscriptions: subsData || [],
-      isPendingSubscriptions: isLoading
+      isPendingSubscriptions: isLoading,
     }))
   }
- 
 }
 
 /**
@@ -186,7 +183,6 @@ export const updateDisplayCurrency = (currency: TCurrency) => {
   }))
 }
 
-
 // SECTION: Domains
 /**
  * Sets the new domain form state.
@@ -203,7 +199,6 @@ export const setNewDomain = (domain: IDomain) => {
  * Fetches domains from Supabase and updates the store.
  */
 export const fetchDomains = async (user: User) => {
-
   if (!user) return
 
   const { data, error } = await supabase
@@ -266,10 +261,7 @@ export const removeDomainFromSupabase = async (domainId: string) => {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  const { error } = await supabase
-    .from('domains')
-    .delete()
-    .eq('id', domainId)
+  const { error } = await supabase.from('domains').delete().eq('id', domainId)
 
   if (error) {
     console.error('Error removing domain:', error)
@@ -310,9 +302,7 @@ export const updateDomainInSupabase = async (
   if (data) {
     subscriptionStore.setState((state) => ({
       ...state,
-      domains: state.domains.map((d) =>
-        d.id === domainId ? data[0] : d,
-      ),
+      domains: state.domains.map((d) => (d.id === domainId ? data[0] : d)),
     }))
   }
 }

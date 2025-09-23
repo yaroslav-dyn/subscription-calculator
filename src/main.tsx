@@ -45,7 +45,6 @@ const indexRoute = createRoute({
   component: App,
 })
 
-
 const routeTree = rootRoute.addChildren([
   indexRoute,
   SubscriptionCalculator(rootRoute),

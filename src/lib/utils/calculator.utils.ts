@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Types } from '@/lib/utils'
+import type { Types } from '@/lib/utils'
 
 const periods = {
   weekly: { multiplier: 52, label: 'Weekly' },
@@ -31,11 +31,12 @@ const currencies: Record<string, CurrencyInfo> = {
  **/
 
 // NOTE: Convert sum to current currency equivalent
-const convertSumWithCurrencyRate = (sum: number, currencyCode: Types.CurrencyValue) =>
-  sum / currencies[currencyCode].rate
+const convertSumWithCurrencyRate = (
+  sum: number,
+  currencyCode: Types.CurrencyValue,
+) => sum / currencies[currencyCode].rate
 
 const getAPIRates = async (currency?: Types.CurrencyValue) => {
-
   try {
     const response = await fetch(
       `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
@@ -66,13 +67,15 @@ const getFullRates = async (currency?: Types.CurrencyValue) => {
     const error = new Error('An error occurred while fetching the rates.')
     // Attempt to enrich error with response details
     try {
-        const errorBody = await response.json();
-        error.message = (errorBody as {'error-type': string})?.['error-type'] || `Request failed with status ${response.status}`;
+      const errorBody = await response.json()
+      error.message =
+        (errorBody as { 'error-type': string })?.['error-type'] ||
+        `Request failed with status ${response.status}`
     } catch (e) {
-        error.message = `Request failed with status ${response.status}`;
+      error.message = `Request failed with status ${response.status}`
     }
-    console.error('Error while getting rates from API', error.message);
-    throw error;
+    console.error('Error while getting rates from API', error.message)
+    throw error
   }
   return response.json()
 }
@@ -82,21 +85,21 @@ export const useGetAPIRates = (currency?: Types.CurrencyValue) => {
     queryKey: ['rates', currency],
     queryFn: () => getAPIRates(currency),
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
-};
+  })
+}
 
 export const useGetFullRates = (currency?: Types.CurrencyValue) => {
   return useQuery({
     queryKey: ['full-rates', currency],
     queryFn: () => getFullRates(currency),
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
-};
+  })
+}
 
 const calculateYearlyCost = (
   sub: Types.ISubscription,
   displayCurrency: Types.CurrencyValue,
-  actualCurrencies: Record<string, CurrencyInfo>
+  actualCurrencies: Record<string, CurrencyInfo>,
 ) => {
   // Convert subscription price to the base currency (USD)
   const priceInBaseCurrency = sub.price * actualCurrencies?.[sub.currency].rate
@@ -153,8 +156,14 @@ const getInsights = (
 }
 
 export const useCalculatorUtils = () => {
-  const formatCurrency = (amount: number, currencyCode: Types.CurrencyValue, currencySymbol?: string) => {
-    const symbol = currencySymbol ? currencySymbol : currencies[currencyCode].symbol
+  const formatCurrency = (
+    amount: number,
+    currencyCode: Types.CurrencyValue,
+    currencySymbol?: string,
+  ) => {
+    const symbol = currencySymbol
+      ? currencySymbol
+      : currencies[currencyCode].symbol
     return `${symbol}${amount.toFixed(2)}`
   }
 

@@ -122,10 +122,10 @@ const SummaryBySubscriptions = ({
               </div>
             </div>
           </div>
-        ): (
-            <h3 className="text-white text-center text-xl font-semibold mb-2">
-              No Subscriptions Yet
-            </h3>
+        ) : (
+          <h3 className="text-white text-center text-xl font-semibold mb-2">
+            No Subscriptions Yet
+          </h3>
         )}
       </>
     </div>

@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 import './preloader.css'
 
 interface PreloaderProps {
-  loading: boolean;
-  classes?: string;
+  loading: boolean
+  classes?: string
 }
 
 const Preloader: React.FC<PreloaderProps> = ({ loading, classes }) => {
   if (!loading) {
-    return null;
-}
+    return null
+  }
 
   return (
     <div className={`preloader-container items-center ${classes}`}>
@@ -19,7 +19,7 @@ const Preloader: React.FC<PreloaderProps> = ({ loading, classes }) => {
         <div className="preloader-dot"></div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Preloader;
+export default Preloader

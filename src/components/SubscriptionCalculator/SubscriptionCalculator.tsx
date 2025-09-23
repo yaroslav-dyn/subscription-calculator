@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import {  useEffect, useState } from 'react'
 import { Plus, Target } from 'lucide-react'
 import { isMobile } from 'react-device-detect'
+import SortableItem from '../SortableDragWrapper'
 import './caclulator.css'
 import { useStore } from '@tanstack/react-store'
 import {
@@ -18,13 +19,15 @@ import {
   // sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import CalculatorHeading from '@/components/CalculatorHeading'
 import ModalUiWrapper from '../ui/ModalUiWrapper'
-import EditSubscriptionModal from './EditSubscriptionModal'
 import DomainForm from './components/DomainSubscriptions/DomainForm'
+import EditSubscriptionModal from './EditSubscriptionModal'
 import SummaryBySubscriptions from './components/SummaryBySubscriptions'
 import DomainSubscriptions from './components/DomainSubscriptions'
+import type {SettingsStoreState} from '@/store/settingsStore';
+import type {ReactNode} from 'react';
 import type { ISubscription } from '@/lib/utils/types'
+import CalculatorHeading from '@/components/CalculatorHeading'
 import { useGetAPIRates } from '@/lib/utils/calculator.utils'
 import Subscriptions, {
   CustomSubscriptionForm,
@@ -32,31 +35,33 @@ import Subscriptions, {
 import {
   addDomain as addDomainToAction,
   addSubscription as addSubscriptionToAction,
+  fetchDomains,
+  fetchSubscriptions,
   removeDomain as removeDomainFromAction,
   removeSubscription as removeSubscriptionFromAction,
   setNewDomain,
   subscriptionStore,
   updateDisplayCurrency,
   updateSubscription as updateSubscriptionAction,
-  fetchSubscriptions,
-  fetchDomains,
 } from '@/store/subscriptionStore'
-import { settingsStore, type SettingsStoreState } from '@/store/settingsStore'
+import {  settingsStore } from '@/store/settingsStore'
 
-import { Types, useAuthListener, useCalculatorUtils, useUser } from '@/lib/utils'
+import {
+  Types,
+  useAuthListener,
+  useCalculatorUtils,
+  useUser,
+} from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
-import SortableItem from '../SortableDragWrapper'
 
 const SubscriptionCalculator = () => {
   useAuthListener()
   const { data: user } = useUser()
   // NOTE: STORE
-  const {
-    popularServices,
-    displayCurrency,
-    newDomain
-  } = useStore(subscriptionStore, (state) => state)
-
+  const { popularServices, displayCurrency, newDomain } = useStore(
+    subscriptionStore,
+    (state) => state,
+  )
 
   const settingsStoreInstance = useStore(settingsStore, (state) => state)
   const { data: currentRates, isLoading } = useGetAPIRates()
@@ -78,7 +83,6 @@ const SubscriptionCalculator = () => {
     'summary',
   ])
 
-
   const sensors = useSensors(
     // useSensor(PointerSensor),
     // useSensor(KeyboardSensor, {
@@ -96,7 +100,10 @@ const SubscriptionCalculator = () => {
         const newIndex = items.indexOf(over.id)
         const newOrder = arrayMove(items, oldIndex, newIndex)
         // Save new order to localStorage
-        localStorage.setItem('subscriptionCalculatorRightColumnOrder', JSON.stringify(newOrder))
+        localStorage.setItem(
+          'subscriptionCalculatorRightColumnOrder',
+          JSON.stringify(newOrder),
+        )
         return newOrder
       })
     }
@@ -105,14 +112,13 @@ const SubscriptionCalculator = () => {
   useEffect(() => {
     // Load saved order from localStorage on mount
     setPanelOrder()
-    user && (
-      fetchSubscriptions(user!),
-      fetchDomains(user!))
+    user && (fetchSubscriptions(user), fetchDomains(user))
   }, [user])
 
-
   const setPanelOrder = () => {
-    const savedOrder = localStorage.getItem('subscriptionCalculatorRightColumnOrder')
+    const savedOrder = localStorage.getItem(
+      'subscriptionCalculatorRightColumnOrder',
+    )
     if (savedOrder) {
       try {
         const parsedOrder = JSON.parse(savedOrder)
@@ -120,7 +126,10 @@ const SubscriptionCalculator = () => {
           setRightColumnItems(parsedOrder)
         }
       } catch (e) {
-        console.error('Failed to parse saved right column order from localStorage', e)
+        console.error(
+          'Failed to parse saved right column order from localStorage',
+          e,
+        )
       }
     }
   }
@@ -147,7 +156,6 @@ const SubscriptionCalculator = () => {
     removeSubscriptionFromAction(name)
   }
 
-
   const rightColumnComponents: { [key: string]: ReactNode } = {
     subscriptions: (
       <Subscriptions
@@ -160,10 +168,14 @@ const SubscriptionCalculator = () => {
         isLoading={isLoading}
       />
     ),
-    rates:
-      settingsStoreInstance.rates &&
-      currentRates && <RatesElement hidePanelHeading={false} isPage={false} isLoading={isLoading} />,
-      domains: settingsStoreInstance.domains && (
+    rates: settingsStoreInstance.rates && currentRates && (
+      <RatesElement
+        hidePanelHeading={false}
+        isPage={false}
+        isLoading={isLoading}
+      />
+    ),
+    domains: settingsStoreInstance.domains && (
       <DomainSubscriptions
         hideAddButton={true}
         removeDomainhandler={removeDomainFromAction}
@@ -175,9 +187,7 @@ const SubscriptionCalculator = () => {
 
   return (
     <main className="p-4">
-
       <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
-
         <CalculatorHeading />
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -282,8 +292,9 @@ const SubscriptionCalculator = () => {
           {/* SECTION: Right Column - Results */}
           <section
             id="calc_right__column"
-            className={`${settingsStoreInstance.settings ? 'lg:col-span-2' : 'lg:col-span-3'
-              } space-y-6`}
+            className={`${
+              settingsStoreInstance.settings ? 'lg:col-span-2' : 'lg:col-span-3'
+            } space-y-6`}
           >
             <DndContext
               sensors={sensors}

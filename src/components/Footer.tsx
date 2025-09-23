@@ -6,7 +6,10 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="text-center text-sm text-gray-500 py-4 border-t border-gray-300 mt-8">
-      <small className='text-sm'>  &copy; {currentYear} Subscription Calculator. {version}v</small>
+      <small className="text-sm">
+        {' '}
+        &copy; {currentYear} Subscription Calculator. {version}v
+      </small>
     </footer>
   )
 }

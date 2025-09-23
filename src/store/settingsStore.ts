@@ -14,7 +14,7 @@ const settingsStoreData = {
   rates: false,
   summary: true,
   domains: false,
-  subscriptions: true
+  subscriptions: true,
 }
 
 export const settingsStore = new Store<SettingsStoreState>(settingsStoreData)

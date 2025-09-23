@@ -6,7 +6,6 @@ interface IModalUiWrapper {
 }
 
 const ModalUiWrapper = ({ isOpen, children }: IModalUiWrapper) => {
-
   if (!isOpen) {
     return null
   }
