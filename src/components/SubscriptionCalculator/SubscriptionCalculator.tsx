@@ -336,12 +336,13 @@ const SubscriptionCalculator = () => {
       </ModalUiWrapper>
 
       {/* SECTION: Edit Subscriptiom modal  */}
+      <ModalUiWrapper isOpen={isEditModalOpen}>
       <EditSubscriptionModal
-        isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         subscription={editingSubscription}
         onSave={handleSaveSubscription}
       />
+      </ModalUiWrapper>
     </main>
   )
 }
