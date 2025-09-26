@@ -1,10 +1,13 @@
+import { NoRecordsState } from './../../../elements/NoRecordsState';
 import { useStore } from '@tanstack/react-store'
-import { BarChart3, Edit, PieChart, Plus, Trash2 } from 'lucide-react'
+import { BarChart3, Edit, Plus, Trash2 } from 'lucide-react'
 import type { ISubscription } from '@/lib/utils/types'
 import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
 import { useCalculatorUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import Preloader from '@/components/ui/Preloader'
+import RemoveProofelement from '@/components/RemoveProofElement'
+import React, { useRef } from 'react'
 
 interface ISubscriptions {
   projectionYears: number
@@ -26,11 +29,33 @@ const Subscriptions = ({
   isLoading,
 }: ISubscriptions) => {
   const { formatCurrency, calculateYearlyCost } = useCalculatorUtils()
-
   const { subscriptions, displayCurrency } = useStore(
     subscriptionStore,
     (state) => state,
   )
+
+  const proofElementRef = useRef<{ data: any; title: string } | null>(null)
+  const [isRemoveProofOpen, setIsRemoveProofOpen] = React.useState(false)
+
+  const removeProof = <T,>(params: { data: T; title: string }) => {
+    proofElementRef.current = { data: params.data, title: params.title }
+    setIsRemoveProofOpen(true)
+  }
+
+  const handleProofDelete = () => {
+    if (proofElementRef.current?.data) {
+      removeSubscription(proofElementRef.current.data)
+    }
+    setIsRemoveProofOpen(false)
+    proofElementRef.current = null
+  }
+
+  const handleProofClose = () => {
+    setIsRemoveProofOpen(false)
+    proofElementRef.current = null
+  }
+
+
   return (
     <div className="Subscriptions-component relative">
       {/* Current Subscriptions */}
@@ -75,7 +100,9 @@ const Subscriptions = ({
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => removeSubscription(sub.name)}
+                      onClick={() =>
+                        removeProof({ data: sub.name, title: `Delete ${sub.name}?` })
+                      }
                       className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -107,22 +134,15 @@ const Subscriptions = ({
 
       {/* Empty State */}
       {subscriptions.length === 0 && (
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-12 shadow-xl text-center">
-          <PieChart className="w-16 h-16 text-white/40 mx-auto mb-4" />
-          <h3 className="text-white text-xl font-semibold mb-2">
-            No Subscriptions Yet
-          </h3>
-          <p className="text-white/70 mb-6">
-            Add your first subscription to see the lifetime cost analysis
-          </p>
-          <button
-            onClick={() => showAddFormhandler(true)}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
-          >
-            Get Started
-          </button>
-        </div>
+        <NoRecordsState showAddFormhandler={showAddFormhandler}  />
       )}
+
+      <RemoveProofelement
+        isOpen={isRemoveProofOpen}
+        title={proofElementRef.current?.title || ''}
+        onProofDelete={handleProofDelete}
+        onClose={handleProofClose}
+      />
 
       {isLoading && <Preloader loading={isLoading} />}
     </div>
