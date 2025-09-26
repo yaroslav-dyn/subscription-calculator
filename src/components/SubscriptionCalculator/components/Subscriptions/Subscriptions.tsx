@@ -5,6 +5,8 @@ import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
 import { useCalculatorUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import Preloader from '@/components/ui/Preloader'
+import RemoveProofelement from '@/components/RemoveProofElement'
+import React, { useRef } from 'react'
 
 interface ISubscriptions {
   projectionYears: number
@@ -26,11 +28,39 @@ const Subscriptions = ({
   isLoading,
 }: ISubscriptions) => {
   const { formatCurrency, calculateYearlyCost } = useCalculatorUtils()
-
   const { subscriptions, displayCurrency } = useStore(
     subscriptionStore,
     (state) => state,
   )
+
+  const proofElementRef = useRef(null)
+
+  const [isRemoveProofOpen, setIsRemoveProofOpen] = React.useState(false)
+  const [removeProofTitle, setRemoveProofTitle] = React.useState('')
+  const [removeProofData, setRemoveProofData] = React.useState<any>(null)
+
+  const removeProof = <T,>(params: { data: T; title: string }) => {
+    setRemoveProofData(params.data)
+    setRemoveProofTitle(params.title)
+    setIsRemoveProofOpen(true)
+  }
+
+  const handleProofDelete = () => {
+    if (removeProofData) {
+      removeSubscription(removeProofData)
+    }
+    setIsRemoveProofOpen(false)
+    setRemoveProofData(null)
+    setRemoveProofTitle('')
+  }
+
+  const handleProofClose = () => {
+    setIsRemoveProofOpen(false)
+    setRemoveProofData(null)
+    setRemoveProofTitle('')
+  }
+
+
   return (
     <div className="Subscriptions-component relative">
       {/* Current Subscriptions */}
@@ -75,7 +105,9 @@ const Subscriptions = ({
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => removeSubscription(sub.name)}
+                      onClick={() =>
+                        removeProof({ data: sub.name, title: `Delete ${sub.name}?` })
+                      }
                       className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -123,6 +155,13 @@ const Subscriptions = ({
           </button>
         </div>
       )}
+
+      <RemoveProofelement
+        isOpen={isRemoveProofOpen}
+        title={removeProofTitle}
+        onProofDelete={handleProofDelete}
+        onClose={handleProofClose}
+      />
 
       {isLoading && <Preloader loading={isLoading} />}
     </div>

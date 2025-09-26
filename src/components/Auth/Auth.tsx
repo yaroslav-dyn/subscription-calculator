@@ -57,7 +57,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         type: 'ERROR',
         status: true,
         message: error.error_description || error.message,
-        countdown: 100,
+        countdown: 6,
       })
     } finally {
       setLoading(false)
