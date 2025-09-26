@@ -8,7 +8,7 @@ interface IRemoveProofElement {
   onClose: () => void
 }
 
-const RemoveProofelement = ({
+const RemoveProofElement = ({
   isOpen,
   title,
   onProofDelete,
@@ -51,4 +51,4 @@ const RemoveProofelement = ({
   )
 }
 
-export default RemoveProofelement
+export default RemoveProofElement

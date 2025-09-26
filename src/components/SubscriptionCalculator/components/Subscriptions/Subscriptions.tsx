@@ -1,5 +1,6 @@
+import { NoRecordsState } from './../../../elements/NoRecordsState';
 import { useStore } from '@tanstack/react-store'
-import { BarChart3, Edit, PieChart, Plus, Trash2 } from 'lucide-react'
+import { BarChart3, Edit, Plus, Trash2 } from 'lucide-react'
 import type { ISubscription } from '@/lib/utils/types'
 import type { CurrencyInfo } from '@/lib/utils/calculator.utils'
 import { useCalculatorUtils } from '@/lib/utils'
@@ -33,31 +34,25 @@ const Subscriptions = ({
     (state) => state,
   )
 
-  const proofElementRef = useRef(null)
-
+  const proofElementRef = useRef<{ data: any; title: string } | null>(null)
   const [isRemoveProofOpen, setIsRemoveProofOpen] = React.useState(false)
-  const [removeProofTitle, setRemoveProofTitle] = React.useState('')
-  const [removeProofData, setRemoveProofData] = React.useState<any>(null)
 
   const removeProof = <T,>(params: { data: T; title: string }) => {
-    setRemoveProofData(params.data)
-    setRemoveProofTitle(params.title)
+    proofElementRef.current = { data: params.data, title: params.title }
     setIsRemoveProofOpen(true)
   }
 
   const handleProofDelete = () => {
-    if (removeProofData) {
-      removeSubscription(removeProofData)
+    if (proofElementRef.current?.data) {
+      removeSubscription(proofElementRef.current.data)
     }
     setIsRemoveProofOpen(false)
-    setRemoveProofData(null)
-    setRemoveProofTitle('')
+    proofElementRef.current = null
   }
 
   const handleProofClose = () => {
     setIsRemoveProofOpen(false)
-    setRemoveProofData(null)
-    setRemoveProofTitle('')
+    proofElementRef.current = null
   }
 
 
@@ -139,26 +134,12 @@ const Subscriptions = ({
 
       {/* Empty State */}
       {subscriptions.length === 0 && (
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-12 shadow-xl text-center">
-          <PieChart className="w-16 h-16 text-white/40 mx-auto mb-4" />
-          <h3 className="text-white text-xl font-semibold mb-2">
-            No Subscriptions Yet
-          </h3>
-          <p className="text-white/70 mb-6">
-            Add your first subscription to see the lifetime cost analysis
-          </p>
-          <button
-            onClick={() => showAddFormhandler(true)}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
-          >
-            Get Started
-          </button>
-        </div>
+        <NoRecordsState showAddFormhandler={showAddFormhandler}  />
       )}
 
       <RemoveProofelement
         isOpen={isRemoveProofOpen}
-        title={removeProofTitle}
+        title={proofElementRef.current?.title || ''}
         onProofDelete={handleProofDelete}
         onClose={handleProofClose}
       />

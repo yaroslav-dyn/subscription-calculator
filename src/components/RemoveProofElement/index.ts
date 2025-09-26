@@ -1,3 +1,3 @@
-import RemoveProofelement from './RemoveProofelement';
+import RemoveProofElement from './RemoveProofElement';
 
-export default RemoveProofelement;
+export default RemoveProofElement;
