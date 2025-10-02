@@ -37,7 +37,6 @@ const RatesElement = ({
     isError,
   } = useGetFullRates(displayCurrency)
   const [currencyFilter, setCurrencyFilter] = useState<string>('')
-
   const [coefficiant, setCoefficiant] = useState<string>('1')
 
   const containerClasses = `RatesElement-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl py-6 px-6 shadow-xl`

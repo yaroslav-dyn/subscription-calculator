@@ -10,20 +10,29 @@ import {
   Menu,
   Target,
   TrendingUp,
+  User,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
 import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/lib/utils'
+import Profile from './Profile'
 
 export default function Header() {
   const { data: user } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }
+
+  const handleProfileClick = () => {
+    setIsProfileOpen(stat => stat = !stat)
+    setIsMenuOpen(false)
+  }
+
 
   return (
     <header className="mx-auto p-4 sticky top-0 z-20">
@@ -38,18 +47,25 @@ export default function Header() {
 
           {/* SECTION: Mobile Nav */}
           <div
-            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${
-              isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
+            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+              }`}
           >
             <div className="flex flex-col justify-between min-h-full">
               <div className="flex items-center justify-between p-4">
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50"
-                >
-                  <LogOut />
-                </button>
+                <div className='flex gap-x-4'>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50"
+                  >
+                    <LogOut />
+                  </button>
+                  <button
+                    onClick={handleProfileClick}
+                    className="px-4 py-2 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50"
+                  >
+                    <User />
+                  </button>
+                </div>
                 <button
                   onClick={() => setIsMenuOpen(false)}
                   className="text-white"
@@ -129,8 +145,15 @@ export default function Header() {
               >
                 <LogOut />
               </button>
+              <button
+                onClick={handleProfileClick}
+                className="px-2 py-1 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50 cursor-pointer"
+              >
+                <User />
+              </button>
             </div>
           </nav>
+          {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
         </>
       )}
     </header>

@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import CalculatorHeading from '@/components/CalculatorHeading'
 import { setNotification } from '@/store/notificationStore'
 import Preloader from '@/components/ui/Preloader'
+import VectorIconsUI from '../ui/VectorIcons'
 
 export const Auth = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
@@ -110,15 +111,19 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
               </h1>
               <form onSubmit={handleAuthAction} className="space-y-6">
                 <input
+                  name='input-email'
+                  id='inputEmail'
                   type="email"
-                  placeholder="Your email"
+                  placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
                 <input
+                  name='input-password'
+                  id='inputPassword'
                   type="password"
-                  placeholder="Your password"
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
@@ -136,30 +141,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
                   className="w-full px-4 py-2 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors flex items-center justify-center"
                   disabled={loading}
                 >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M22.57 12.25C22.57 11.45 22.5 10.68 22.36 9.93H12.27V14.4H18.2C17.94 15.85 17.12 17.09 15.91 17.92V20.6H19.48C21.44 18.78 22.57 15.83 22.57 12.25Z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12.27 23C15.22 23 17.73 22.03 19.48 20.6L15.91 17.92C14.91 18.58 13.69 19 12.27 19C9.51 19 7.15 17.23 6.24 14.78H2.58V17.54C4.34 20.86 8.02 23 12.27 23Z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M6.24 14.78C6.04 14.21 5.94 13.61 5.94 13C5.94 12.39 6.04 11.79 6.24 11.22V8.46H2.58C1.94 9.74 1.56 11.31 1.56 13C1.56 14.69 1.94 16.26 2.58 17.54L6.24 14.78Z"
-                      fill="#FBBC05"
-                    />
-
-                    <path
-                      d="M12.27 7C13.83 7 15.29 7.54 16.34 8.53L19.54 5.33C17.73 3.67 15.22 2.5 12.27 2.5C8.02 2.5 4.34 5.14 2.58 8.46L6.24 11.22C7.15 8.77 9.51 7 12.27 7Z"
-                      fill="#EA4335"
-                    />
-                  </svg>
+                  {VectorIconsUI.googleAuthIcon()}
                   Sign In with Google
                 </button>
               </form>
