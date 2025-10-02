@@ -156,6 +156,7 @@ const getInsights = (
 }
 
 export const useCalculatorUtils = () => {
+  
   const formatCurrency = (
     amount: number,
     currencyCode: Types.CurrencyValue,

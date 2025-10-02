@@ -4,6 +4,7 @@ import ModalUiWrapper from '@/components/ui/ModalUiWrapper'
 interface IRemoveProofElement {
   isOpen: boolean
   title: string
+  modalClasses?: string
   onProofDelete: () => void
   onClose: () => void
 }
@@ -13,11 +14,12 @@ const RemoveProofElement = ({
   title,
   onProofDelete,
   onClose,
+  modalClasses,
 }: IRemoveProofElement) => {
   if (!isOpen) return
 
   return (
-    <ModalUiWrapper isOpen={isOpen}>
+    <ModalUiWrapper modalClasses={modalClasses} isOpen={isOpen}>
       <div className="RemoveProofElement-component">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white font-semibold text-lg">
@@ -47,7 +49,6 @@ const RemoveProofElement = ({
         </div>
       </div>
     </ModalUiWrapper>
-
   )
 }
 

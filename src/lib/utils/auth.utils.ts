@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Store } from '@tanstack/store'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
+import { setNotification } from '@/store/notificationStore'
 
 interface UserStoreState {
   currentUser: User | null
@@ -52,3 +53,20 @@ export const useAuthListener = () => {
     }
   }, [queryClient])
 }
+
+
+export const useLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error: any) {
+      setNotification({
+        type: 'ERROR',
+        status: true,
+        message: error.error_description || error.message,
+        countdown: 6,
+      })
+    } finally {
+      return true
+    }
+  }
