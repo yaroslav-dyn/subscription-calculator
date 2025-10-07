@@ -20,6 +20,7 @@ vi.mock('./lib/supabaseClient', () => ({
 }))
 
 describe('App', () => {
+  
   test('renders', () => {
     render(
       <Auth>
@@ -69,7 +70,44 @@ describe('App', () => {
 
     // After successful sign up, the form should switch to the sign in view
     await waitFor(() => {
-      expect(screen.getByText('Sign In')).toBeDefined()
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeDefined()
     })
   })
-})
+
+  test('user can sign in', async () => {
+    // @ts-expect-error: mock implementation
+    supabase.auth.signInWithPassword.mockResolvedValueOnce({ error: null })
+
+    render(
+      <Auth>
+        <SubscriptionCalculator />
+      </Auth>,
+    )
+
+    // Wait for the component to finish loading
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeDefined()
+    })
+
+    // Fill out the form
+    fireEvent.change(screen.getByPlaceholderText('Your email'), {
+      target: { value: 'test@example.com' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Your password'), {
+      target: { value: 'password123' },
+    })
+
+    // Submit the form
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    // Wait for the async actions to complete
+    await waitFor(() => {
+      // Check if signInWithPassword was called correctly
+      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      })
+    })
+  })
+
+})//

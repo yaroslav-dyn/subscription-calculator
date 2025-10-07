@@ -17,3 +17,24 @@ code {
 .base__page-bg {
   @apply bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900;
 }
+
+
+.light-scrollbar::-webkit-scrollbar {
+  @apply w-2;
+  /* Set scrollbar width */
+}
+
+.light-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+  /* Style the track */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-white/60 rounded-full;
+  /* Style the thumb */
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-700;
+  /* Style thumb on hover */
+}

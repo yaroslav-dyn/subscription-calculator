@@ -80,7 +80,7 @@ const DomainSubscriptions = ({
 
       {/* NOTE: Domain List */}
       {hideAddButton && domains.length > 0 && (
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-2 max-h-48 overflow-y-auto light-scrollbar">
           {domains.map((domain) => {
             const daysLeft = getDaysUntilExpiry(domain.expiry_date)
             const statusColor = getStatusColor(daysLeft)

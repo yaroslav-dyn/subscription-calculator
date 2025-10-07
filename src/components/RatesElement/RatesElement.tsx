@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { useStore } from '@tanstack/react-store'
 import { Currency } from 'lucide-react'
 import getSymbolFromCurrency from 'currency-symbol-map'
@@ -29,6 +29,9 @@ const RatesElement = ({
   isPage,
   isLoading,
 }: IRatesTypes) => {
+
+  const headingRef = useRef<HTMLDivElement>(null)
+  const ratesPanelRef = useRef<HTMLDivElement>(null)
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
   const { formatCurrency } = useCalculatorUtils()
   const {
@@ -42,6 +45,37 @@ const RatesElement = ({
   const containerClasses = `RatesElement-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl py-6 px-6 shadow-xl`
 
   const actualRates = useMemo(() => ratesBySymbol?.rates || [], [ratesBySymbol])
+
+  useEffect(() => {
+    if (!isPage) return
+
+    const handleScroll = () => {
+      if (headingRef.current && ratesPanelRef.current) {
+        const scrollY = window.scrollY
+        const scale = Math.max(0.5, 1 - scrollY / 200)
+        headingRef.current.style.transform = `scale(${scale})`
+        headingRef.current.style.transformOrigin = 'center'
+
+        const headingHeight = headingRef.current.offsetHeight
+        const translateY = -(headingHeight * (1 - scale))
+        ratesPanelRef.current.style.transform = `translateY(${translateY}px)`
+      }
+    }
+
+    if (headingRef.current) {
+      headingRef.current.style.transition = 'transform 0.1s linear'
+    }
+    if (ratesPanelRef.current) {
+      ratesPanelRef.current.style.transition = 'transform 0.1s linear'
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [isPage])
+  
 
   const displayRates: Array<IDisplayRate> = useMemo(() => {
     return (
@@ -68,7 +102,7 @@ const RatesElement = ({
   return (
     <div className={`max-w-6xl mx-auto ${classes}`}>
       {hidePanelHeading && (
-        <>
+        <div ref={headingRef} className='page_heading' id='ratePageHeading'>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg">
               <Currency className="w-8 h-8 md:w-10 md:h-10 text-white" />
@@ -95,9 +129,9 @@ const RatesElement = ({
               exchangerate-api.com
             </a>
           </p>
-        </>
+        </div>
       )}
-      <div className={containerClasses}>
+      <div ref={ratesPanelRef} className={containerClasses}>
         <div className="flex flex-col md:flex-row md:items-center max-md:gap-y-4 md:justify-between mb-6">
           {!hidePanelHeading && (
             <div className="flex items-center gap-x-1 md:basis-1/3">
@@ -135,7 +169,7 @@ const RatesElement = ({
         </div>
 
         <section
-          className={`text-white grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 
+          className={`light-scrollbar text-white grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 
           ${!isPage ? 'max-h-48' : 'max-h-[42vh] md:max-h-[50vh]'} overflow-y-auto`}
         >
           {isLoading && <p>Loading rates...</p>}

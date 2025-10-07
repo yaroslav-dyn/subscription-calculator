@@ -114,7 +114,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
                   name='input-email'
                   id='inputEmail'
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder="Your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"
@@ -123,7 +123,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
                   name='input-password'
                   id='inputPassword'
                   type="password"
-                  placeholder="Enter password"
+                  placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400"

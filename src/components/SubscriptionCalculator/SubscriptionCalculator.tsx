@@ -250,7 +250,7 @@ const SubscriptionCalculator = () => {
                   Popular Services
                 </h3>
 
-                <div className="space-y-2 max-h-64 overflow-y-auto overflow-x-hidden">
+                <div className="light-scrollbar space-y-2 max-h-64 overflow-y-auto overflow-x-hidden">
                   {popularServices.map((service, index) => (
                     <button
                       key={index}
