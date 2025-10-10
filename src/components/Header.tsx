@@ -29,10 +29,9 @@ export default function Header() {
   }
 
   const handleProfileClick = () => {
-    setIsProfileOpen(stat => stat = !stat)
+    setIsProfileOpen((stat) => (stat = !stat))
     setIsMenuOpen(false)
   }
-
 
   return (
     <header className="mx-auto p-4 sticky top-0 z-20">
@@ -47,12 +46,13 @@ export default function Header() {
 
           {/* SECTION: Mobile Nav */}
           <div
-            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-              }`}
+            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${
+              isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
           >
             <div className="flex flex-col justify-between min-h-full">
               <div className="flex items-center justify-between p-4">
-                <div className='flex gap-x-4'>
+                <div className="flex gap-x-4">
                   <button
                     onClick={handleProfileClick}
                     className="px-4 py-2 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50"
@@ -95,6 +95,17 @@ export default function Header() {
                   <Currency className="text-white w-6 h-6" />
                   <span> Currency rate</span>
                 </Link>
+
+                <Link
+                  className="opacity-50 flex items-center space-x-2"
+                  activeProps={{ className: `opacity-100` }}
+                  activeOptions={{ exact: true }}
+                  to="/subscription-rate"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Currency className="text-white w-6 h-6" />
+                  <span> Subscription analytics</span>
+                </Link>
               </nav>
 
               <div>
@@ -132,6 +143,16 @@ export default function Header() {
                   to="/currency-rate"
                 >
                   Currency rate
+                </Link>
+              </div>
+
+              <div className="font-semibold uppercase">
+                <Link
+                  className="block opacity-60"
+                  activeProps={{ className: `opacity-100` }}
+                  to="/subscription-rate"
+                >
+                  Subscription analytics
                 </Link>
               </div>
             </div>

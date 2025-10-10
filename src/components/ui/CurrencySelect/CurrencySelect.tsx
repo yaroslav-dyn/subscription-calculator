@@ -9,6 +9,7 @@ import {
 interface ICurrencySelect {
   classes?: string
   extEvent?: (currency: CurrencyValue) => void
+  
 }
 
 const CurrencySelectElement = ({ classes = '', extEvent }: ICurrencySelect) => {

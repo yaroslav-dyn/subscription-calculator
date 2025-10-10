@@ -14,7 +14,7 @@ export type CurrencyInfo = {
   rate: number
 }
 
-const currencies: Record<string, CurrencyInfo> = {
+export const currencies: Record<string, CurrencyInfo> = {
   USD: { symbol: '$', rate: 1 }, // Base currency
   EUR: { symbol: '€', rate: 1.08 }, // 1 EUR = 1.08 USD
   UAH: { symbol: '₴', rate: 0.025 }, // 1 UAH = 0.025 USD
