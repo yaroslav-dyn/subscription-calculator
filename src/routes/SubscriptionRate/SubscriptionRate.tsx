@@ -110,7 +110,7 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
           </label>
           <input
             id="montlyBudget"
-            className="border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
+            className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
             type="number"
             value={budget}
             onInput={(e) => setBudget((e.target as HTMLInputElement).value)}
