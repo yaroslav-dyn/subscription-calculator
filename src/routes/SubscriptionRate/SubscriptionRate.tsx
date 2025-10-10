@@ -98,9 +98,14 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
       />
 
       <div className="flex items-center gap-x-4">
-        <CurrencySelectElement classes="max-w-40" />
         <div>
-          <label htmlFor="montlyBudget" className="mr-2 inline-block text-white">
+          <label className="mr-2 mb-1 inline-block text-white">
+            Currency
+          </label>
+          <CurrencySelectElement classes="max-w-40" />
+        </div>
+        <div>
+          <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
             Montly budget
           </label>
           <input
