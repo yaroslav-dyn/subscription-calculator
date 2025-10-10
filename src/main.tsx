@@ -4,24 +4,19 @@ import {
   Outlet,
   RouterProvider,
   createRootRoute,
-  createRoute,
   createRouter,
 } from '@tanstack/react-router'
 
 // import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import TanStackQueryDemo from './routes/demo.tanstack-query.tsx'
-import StoreDemo from './routes/demo.store.tsx'
 import Header from './components/Header'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
 
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
-
-import App from './App.tsx'
 import SubscriptionCalculator from './components/SubscriptionCalculator'
 import CurrencyRate from './components/RatesElement'
+import SubscriptionRate from './routes/SubscriptionRate'
 import NotFound from './components/404'
 import Footer from './components/Footer.tsx'
 import NotificationDrawer from './components/NotificationDrawer'
@@ -39,18 +34,11 @@ const rootRoute = createRootRoute({
   notFoundComponent: () => <NotFound />,
 })
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/demo',
-  component: App,
-})
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
   SubscriptionCalculator(rootRoute),
   CurrencyRate(rootRoute),
-  TanStackQueryDemo(rootRoute),
-  StoreDemo(rootRoute),
+  SubscriptionRate(rootRoute)
 ])
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()

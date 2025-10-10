@@ -51,9 +51,7 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
       })
     }
   }
-
-  console.log("🚀 ~ Profile ~ user:", user)
-
+  
   return (
     <div
       className="absolute top-16 right-auto md:right-0  bg-black/50 backdrop-blur-sm rounded-lg flex justify-center items-center"
