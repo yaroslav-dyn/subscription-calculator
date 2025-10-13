@@ -7,6 +7,9 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  AreaChart,
+  Area,
+  Legend,
 } from 'recharts'
 import { useCalculatorUtils, useUser } from '@/lib/utils'
 import {
@@ -16,6 +19,9 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
+import { monthsArray } from '@/lib/utils/constants'
+import { useGetFullRates } from '@/lib/utils/calculator.utils'
+
 
 interface ISubRateTypes {
   classes?: string
@@ -32,30 +38,21 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
     (state) => state,
   )
   const [budget, setBudget] = useState<string>('500')
+  const [selectedCurrecny, setSelectedCurrecny] = useState(displayCurrency);
+
 
   // Prepare chart data: group subscriptions by month for current year
   const currentYear = new Date().getFullYear()
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
+
 
   useEffect(() => {
     user && fetchSubscriptions(user)
+    const settedBudget = localStorage.getItem('sbc_budget')
+    settedBudget && setBudget(settedBudget);
   }, [user])
 
   type ChartDataType = { month: string; total: number };
-  type PercentDataType = { month: string; percent: number };
+  type PercentDataType = { month: string; percent: number, sum: number };
   const [chartData, setChartData] = useState<ChartDataType[]>([])
   const [percentData, setPercentData] = useState<PercentDataType[]>([])
 
@@ -74,20 +71,25 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
           }
         }
         monthlyTotals[monthIdx] +=
-          calculateYearlyCost(sub, displayCurrency, currencies) / 12
+          calculateYearlyCost(sub, selectedCurrecny, currencies) / 12
       })
-      setChartData(months.map((m, i) => ({
+      setChartData(monthsArray.map((m, i) => ({
         month: m,
         total: monthlyTotals[i],
       })))
       const budgetValue = Number(budget) || 0
-      setPercentData(months.map((m, i) => ({
-        month: m,
-        percent: budgetValue > 0 ? Number(((monthlyTotals[i] / budgetValue) * 100).toFixed(2)) : 0
-      })))
+      // Calculate cumulative monthly totals for percentData
+      let cumulativeTotal = 0
+      setPercentData(monthsArray.map((m, i) => {
+        cumulativeTotal += monthlyTotals[i]
+        return {
+          month: m,
+          percent: budgetValue > 0 ? Number(((cumulativeTotal / budgetValue) * 100).toFixed(2)) : 0,
+          sum: cumulativeTotal
+        }
+      }))
     }
-  }, [subscriptions, displayCurrency, budget, currencies, calculateYearlyCost])
-
+  }, [subscriptions, selectedCurrecny, budget, currencies, calculateYearlyCost])
 
 
   return (
@@ -97,27 +99,14 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
         classes={`${!isPage ? 'h-48' : 'h-[42vh] md:h-[50vh'}`}
       />
 
-      <div className="flex items-center gap-x-4">
-        <div>
-          <label className="mr-2 mb-1 inline-block text-white">
-            Currency
-          </label>
-          <CurrencySelectElement classes="max-w-40" />
-        </div>
-        <div>
-          <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
-            Montly budget
-          </label>
-          <input
-            id="montlyBudget"
-            className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
-            type="number"
-            value={budget}
-            onInput={(e) => setBudget((e.target as HTMLInputElement).value)}
-            placeholder="You montly budget ..."
-          />
-        </div>
-      </div>
+
+      <AnaliticsInputPanel
+        selectedCurrecny={selectedCurrecny}
+        budget={budget}
+        updateBudget={(amount, currency) => {
+          setBudget(amount);
+          setSelectedCurrecny(currency)
+        }} />
 
       {subscriptions && (
         <>
@@ -126,17 +115,23 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
               Subscriptions cost by month.
             </div>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: number | string) =>
-                    `${Number(value).toFixed(2)} ${displayCurrency}`
-                  }
-                />
-                <Bar dataKey="total" fill="#8884d8" name="Total" />
-              </BarChart>
+              <AreaChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip
+                formatter={(value: number | string) =>
+                `${Number(value).toFixed(2)} ${selectedCurrecny}`
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="#8884d8"
+                fill="#8884d8"
+                name="Total"
+              />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           <br />
@@ -146,11 +141,51 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
             </div>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={percentData}>
+                <Legend />
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                <Tooltip formatter={(value: number | string) => `${value}%`} />
-                <Bar dataKey="percent" fill="#82ca9d" name="% of budget" />
+                <Bar
+                  dataKey="percent"
+                  fill="#82ca9d"
+                  name="% of budget"
+                  label={({ x, y, width, index }) => {
+                    // Show sum above bar
+                    const sum = percentData[index!]?.sum ?? 0
+                    if (sum) {
+                      return (
+                        <text
+                          x={(x! as number) + (width as number) / 2}
+                          y={(y! as number) - 8}
+                          fill="#fff"
+                          textAnchor="middle"
+                          fontSize={12}
+                        >
+                          {sum.toFixed(2)} {selectedCurrecny}
+                        </text>
+                      )
+                    }
+                  }}
+                />
+                <Tooltip
+                  cursor={false}
+                  formatter={(
+                    value: number | string,
+                    props: any
+                  ) => {
+                    const { payload } = props
+                    const sum = payload?.sum ?? 0
+                    return [
+                      `${value}%`,
+                      `% of budget`,
+                      <div>
+                        <span>
+                          <b>Sum:</b> {sum.toFixed(2)} {selectedCurrecny}
+                        </span>
+                      </div>
+                    ]
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -160,3 +195,68 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
   )
 }
 export default SubscriptionRate
+
+
+const AnaliticsInputPanel = ({ selectedCurrecny, updateBudget, budget }: {
+  selectedCurrecny: string,
+  budget: string,
+  updateBudget: (amount: string, currencyL: string) => void
+}) => {
+
+  const [currency, setCurrency] = useState(selectedCurrecny);
+  const {
+    data: curentRate,
+  } = useGetFullRates(selectedCurrecny)
+
+
+  const calculateBudgetByCurrency = async (currency: string) => {
+
+    if (!curentRate) {
+      console.log('Rate is undefined', curentRate)
+      return
+    }
+
+    const calcBudget: number | undefined = curentRate && parseFloat(budget) * curentRate?.rates[currency]
+    if (!curentRate) {
+      console.error('We have problem with getting current rate for selected currency')
+    }
+
+    updateBudget(calcBudget!.toFixed(2).toString(), currency)
+
+    setCurrency(currency)
+  }
+
+  useEffect(() => {
+    curentRate && calculateBudgetByCurrency(currency)
+  }, [currency]);
+
+  return (
+    <div className="flex items-center gap-x-4">
+      <div>
+        <label className="mr-2 mb-1 inline-block text-white">
+          Currency
+        </label>
+        <CurrencySelectElement
+          selectedCurrecny={currency}
+          extEvent={(curr: string) => setCurrency(curr)}
+          classes="max-w-40" />
+      </div>
+      <div>
+        <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
+          Montly budget
+        </label>
+        <input
+          id="montlyBudget"
+          className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
+          type="number"
+          value={budget}
+          onInput={(e) => {
+            const budgetValue = (e.target as HTMLInputElement).value
+            updateBudget(budgetValue, currency)
+            localStorage.setItem('sbc_budget', budgetValue)
+          }}
+          placeholder="You montly budget ..." />
+      </div>
+    </div>
+  )
+}

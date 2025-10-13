@@ -18,3 +18,18 @@ export const popularServices: Array<ISubscription> = [
   { name: 'Dropbox', price: 9.99, period: 'monthly', currency: 'USD' },
   { name: 'Canva Pro', price: 119.99, period: 'yearly', currency: 'USD' },
 ]
+
+export const monthsArray = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]

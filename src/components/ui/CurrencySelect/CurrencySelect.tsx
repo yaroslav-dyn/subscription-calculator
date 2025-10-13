@@ -9,20 +9,24 @@ import {
 interface ICurrencySelect {
   classes?: string
   extEvent?: (currency: CurrencyValue) => void
-  
+  onChangeCurrency?: (CurrencyValue: CurrencyValue) => void
+  selectedCurrecny?: string
 }
 
-const CurrencySelectElement = ({ classes = '', extEvent }: ICurrencySelect) => {
+const CurrencySelectElement = ({ classes = '', extEvent, onChangeCurrency, selectedCurrecny }: ICurrencySelect) => {
   const { displayCurrency } = useStore(subscriptionStore, (state) => state)
 
   return (
     <select
-      value={displayCurrency}
-      onChange={(e) =>
+      value={!extEvent ? displayCurrency : selectedCurrecny!}
+      onChange={(e) => {
         extEvent
           ? extEvent(e.target.value)
           : updateDisplayCurrency(e.target.value)
+        onChangeCurrency && onChangeCurrency(e.target.value)
       }
+      }
+
       className={`w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400 ${classes}`}
     >
       {Types.AvailableCurrencies.map((curr) => (

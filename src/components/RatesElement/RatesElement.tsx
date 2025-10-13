@@ -9,18 +9,13 @@ import {
 } from '@/lib/utils/calculator.utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
+import type { IDisplayRate } from '@/lib/utils/types'
 
 interface IRatesTypes {
   classes?: string
   hidePanelHeading?: boolean
   isPage?: boolean
   isLoading?: boolean
-}
-
-interface IDisplayRate {
-  cur: string
-  rate: number
-  symbol: string
 }
 
 const RatesElement = ({

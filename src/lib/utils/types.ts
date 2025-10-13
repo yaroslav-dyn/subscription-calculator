@@ -18,3 +18,10 @@ export interface IMessageDrawerData {
   type?: 'DEFAULT' | 'ERROR' | 'WARNING' | 'SUCCESS'
   countdown?: number
 }
+
+
+export interface IDisplayRate {
+  cur: string
+  rate: number
+  symbol: string
+}

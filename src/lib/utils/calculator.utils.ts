@@ -12,12 +12,13 @@ const periods = {
 export type CurrencyInfo = {
   symbol: string
   rate: number
+  isDefault: boolean
 }
 
 export const currencies: Record<string, CurrencyInfo> = {
-  USD: { symbol: '$', rate: 1 }, // Base currency
-  EUR: { symbol: '€', rate: 1.08 }, // 1 EUR = 1.08 USD
-  UAH: { symbol: '₴', rate: 0.025 }, // 1 UAH = 0.025 USD
+  USD: { symbol: '$', rate: 1, isDefault: true }, // Base currency
+  EUR: { symbol: '€', rate: 1.08, isDefault: false }, // 1 EUR = 1.08 USD
+  UAH: { symbol: '₴', rate: 0.025, isDefault: false }, // 1 UAH = 0.025 USD
 }
 
 /**
@@ -33,10 +34,10 @@ export const currencies: Record<string, CurrencyInfo> = {
 // NOTE: Convert sum to current currency equivalent
 const convertSumWithCurrencyRate = (
   sum: number,
-  currencyCode: Types.CurrencyValue,
-) => sum / currencies[currencyCode].rate
+  currencyCode: Types.CurrencyValue
+) => !currencies[currencyCode].isDefault && (sum / currencies[currencyCode].rate)
 
-const getAPIRates = async (currency?: Types.CurrencyValue) => {
+export const getAPIRates = async (currency?: Types.CurrencyValue) => {
   try {
     const response = await fetch(
       `https://api.exchangerate-api.com/v4/latest/${currency ?? 'USD'}`,
@@ -58,6 +59,27 @@ const getAPIRates = async (currency?: Types.CurrencyValue) => {
     }
   }
 } //
+
+export const getAPIRatesPair = async (prevCurrency: Types.CurrencyValue, nextCurrency: Types.CurrencyValue) => {
+  const response = await fetch(
+    `https://v6.exchangerate-api.com/v6/${import.meta.env.VITE_APP_EXCHANGERATE_KEY}/pair/${prevCurrency}/${nextCurrency}`
+  )
+  if (!response.ok) {
+    const error = new Error('An error occurred while fetching the rates.')
+    // Attempt to enrich error with response details
+    try {
+      const errorBody = await response.json()
+      error.message =
+        (errorBody as { 'error-type': string })?.['error-type'] ||
+        `Request failed with status ${response.status}`
+    } catch (e) {
+      error.message = `Request failed with status ${response.status}`
+    }
+    console.error('Error while getting rates from API', error.message)
+    throw error
+  }
+  return response.json()
+}
 
 const getFullRates = async (currency?: Types.CurrencyValue) => {
   const response = await fetch(
@@ -137,9 +159,9 @@ const getInsights = (
   const yearsForVacation =
     totals.yearly > 0
       ? Math.ceil(
-          convertSumWithCurrencyRate(vacationCost, displayCurrency) /
-            totals.yearly,
-        )
+        convertSumWithCurrencyRate(vacationCost, displayCurrency) as number /
+        totals.yearly,
+      )
       : 0
 
   return {
@@ -148,15 +170,15 @@ const getInsights = (
     coffeeEquivalent:
       totals.yearly > 0
         ? Math.floor(
-            totals.yearly /
-              (convertSumWithCurrencyRate(3, displayCurrency) * 365),
-          )
+          totals.yearly /
+          (convertSumWithCurrencyRate(3, displayCurrency) as number * 365),
+        )
         : 0, // $3 coffee
   }
 }
 
 export const useCalculatorUtils = () => {
-  
+
   const formatCurrency = (
     amount: number,
     currencyCode: Types.CurrencyValue,
