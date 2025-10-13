@@ -53,17 +53,19 @@ export default function Header() {
             <div className="flex flex-col justify-between min-h-full">
               <div className="flex items-center justify-between p-4">
                 <div className="flex gap-x-4">
-                  <button
-                    onClick={handleProfileClick}
-                    className="px-4 py-2 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50"
-                  >
-                    <User />
-                  </button>
+
                   <button
                     onClick={handleLogout}
                     className="px-4 py-2 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50"
                   >
                     <LogOut />
+                  </button>
+
+                  <button
+                    onClick={handleProfileClick}
+                    className="px-4 py-2 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50"
+                  >
+                    <User />
                   </button>
                 </div>
                 <button
@@ -125,6 +127,9 @@ export default function Header() {
 
           {/* SECTION Desktop nav */}
           <nav className="hidden md:flex flex-row items-center justify-between text-white">
+
+            <PanelsStatus />
+
             <div className="flex items-center gap-x-4">
               <div className="font-semibold">
                 <Link
@@ -158,19 +163,19 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-x-6">
-              <PanelsStatus />
               <button
                 onClick={handleProfileClick}
                 className="px-2 py-1 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50 cursor-pointer"
               >
                 <User />
               </button>
-              <button
+               <button
                 onClick={handleLogout}
                 className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
               >
                 <LogOut />
               </button>
+
             </div>
           </nav>
           {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
