@@ -17,7 +17,8 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
 import { monthsArray } from '@/lib/utils/constants'
-import { getAPIRatesPair } from '@/lib/utils/calculator.utils'
+import { getAPIRatesPair, useGetFullRates } from '@/lib/utils/calculator.utils'
+import { useQuery } from '@tanstack/react-query'
 
 interface ISubRateTypes {
   classes?: string
@@ -40,25 +41,8 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
   // Prepare chart data: group subscriptions by month for current year
   const currentYear = new Date().getFullYear()
 
-  const calculateBudgetByCurrency = async (currency: string) => {
-    const curentRate = await getAPIRatesPair(selectedCurrecny, currency)
-    
-
-    const calcBudget: number | undefined = curentRate && parseFloat(budget) * curentRate?.conversion_rate
-    if (!curentRate) {
-      console.error('We have problem with getting current rate for selected currency')
-    }
-    if (curentRate && currency === 'USD') {
-      setBudget(localStorage.getItem('sbc_budget')!)
-    } else {
-      setBudget(calcBudget!.toFixed(2).toString())
-    }
-    setSelectedCurrecny(currency)
-  }
 
   useEffect(() => {
-    const settedBudget = localStorage.getItem('sbc_budget')
-    settedBudget && setBudget(settedBudget);
     user && fetchSubscriptions(user)
   }, [user])
 
@@ -97,7 +81,6 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
   }, [subscriptions, selectedCurrecny, budget, currencies, calculateYearlyCost])
 
 
-
   return (
     <div className={`max-w-6xl mx-auto ${classes}`}>
       <Preloader
@@ -106,35 +89,13 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
       />
 
 
-      <div className="flex items-center gap-x-4">
-        <div>
-          <label className="mr-2 mb-1 inline-block text-white">
-            Currency
-          </label>
-          <CurrencySelectElement 
-            selectedCurrecny={selectedCurrecny}
-            extEvent={calculateBudgetByCurrency} 
-            classes="max-w-40" 
-          />
-        </div>
-        <div>
-          <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
-            Montly budget
-          </label>
-          <input
-            id="montlyBudget"
-            className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
-            type="number"
-            value={budget}
-            onInput={(e) => {
-              const budgetValue = (e.target as HTMLInputElement).value
-              setBudget(budgetValue)
-              localStorage.setItem('sbc_budget', budgetValue)
-            }}
-            placeholder="You montly budget ..."
-          />
-        </div>
-      </div>
+      <AnaliticsInputPanel 
+        selectedCurrecny={selectedCurrecny} 
+        budget={budget} 
+        updateBudget={(amount, currency) => {
+          setBudget(amount);
+          setSelectedCurrecny(currency)
+        }} />
 
       {subscriptions && (
         <>
@@ -177,3 +138,74 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
   )
 }
 export default SubscriptionRate
+
+
+const AnaliticsInputPanel = ({ selectedCurrecny, updateBudget, budget } : {
+  selectedCurrecny: string,
+  budget: string,
+  updateBudget: (amount: string, currencyL: string) => void
+}) => {
+
+  const [currency, setCurrency] = useState(selectedCurrecny);
+  const {
+    data: curentRate,
+  } = useGetFullRates(selectedCurrecny)
+
+  useEffect(() => {
+    const settedBudget = localStorage.getItem('sbc_budget')
+    settedBudget && updateBudget(settedBudget, currency);
+  }, []);
+
+ 
+  const calculateBudgetByCurrency = async (currency: string) => {
+
+    if (!curentRate) {
+      console.log('Rate is undefined', curentRate)
+      return 
+    }
+
+    const calcBudget: number | undefined = curentRate && parseFloat(budget) * curentRate?.rates[currency]
+    if (!curentRate) {
+      console.error('We have problem with getting current rate for selected currency')
+    }
+    if (curentRate && currency === 'USD') {
+      updateBudget(localStorage.getItem('sbc_budget')!, currency)
+    } else {
+      updateBudget(calcBudget!.toFixed(2).toString(), currency)
+    }
+    setCurrency(currency)
+  }
+
+  useEffect(() => {
+    curentRate && calculateBudgetByCurrency(currency)
+  }, [currency]);
+
+  return (
+    <div className="flex items-center gap-x-4">
+      <div>
+        <label className="mr-2 mb-1 inline-block text-white">
+          Currency
+        </label>
+        <CurrencySelectElement
+          selectedCurrecny={currency}
+          extEvent={(curr: string) => setCurrency(curr)}
+          classes="max-w-40" />
+      </div>
+      <div>
+        <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
+          Montly budget
+        </label>
+        <input
+          id="montlyBudget"
+          className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
+          type="number"
+          value={budget}
+          onInput={(e) => {
+            const budgetValue = (e.target as HTMLInputElement).value
+            updateBudget(budgetValue, currency)
+          }}
+          placeholder="You montly budget ..." />
+      </div>
+    </div>
+  )
+}
