@@ -16,6 +16,8 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
+import { monthsArray } from '@/lib/utils/constants'
+import { getAPIRatesPair } from '@/lib/utils/calculator.utils'
 
 interface ISubRateTypes {
   classes?: string
@@ -32,25 +34,31 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
     (state) => state,
   )
   const [budget, setBudget] = useState<string>('500')
+  const [selectedCurrecny, setSelectedCurrecny] = useState(displayCurrency);
+
 
   // Prepare chart data: group subscriptions by month for current year
   const currentYear = new Date().getFullYear()
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
+
+  const calculateBudgetByCurrency = async (currency: string) => {
+    const curentRate = await getAPIRatesPair(selectedCurrecny, currency)
+    
+
+    const calcBudget: number | undefined = curentRate && parseFloat(budget) * curentRate?.conversion_rate
+    if (!curentRate) {
+      console.error('We have problem with getting current rate for selected currency')
+    }
+    if (curentRate && currency === 'USD') {
+      setBudget(localStorage.getItem('sbc_budget')!)
+    } else {
+      setBudget(calcBudget!.toFixed(2).toString())
+    }
+    setSelectedCurrecny(currency)
+  }
 
   useEffect(() => {
+    const settedBudget = localStorage.getItem('sbc_budget')
+    settedBudget && setBudget(settedBudget);
     user && fetchSubscriptions(user)
   }, [user])
 
@@ -74,19 +82,19 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
           }
         }
         monthlyTotals[monthIdx] +=
-          calculateYearlyCost(sub, displayCurrency, currencies) / 12
+          calculateYearlyCost(sub, selectedCurrecny, currencies) / 12
       })
-      setChartData(months.map((m, i) => ({
+      setChartData(monthsArray.map((m, i) => ({
         month: m,
         total: monthlyTotals[i],
       })))
       const budgetValue = Number(budget) || 0
-      setPercentData(months.map((m, i) => ({
+      setPercentData(monthsArray.map((m, i) => ({
         month: m,
         percent: budgetValue > 0 ? Number(((monthlyTotals[i] / budgetValue) * 100).toFixed(2)) : 0
       })))
     }
-  }, [subscriptions, displayCurrency, budget, currencies, calculateYearlyCost])
+  }, [subscriptions, selectedCurrecny, budget, currencies, calculateYearlyCost])
 
 
 
@@ -97,12 +105,17 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
         classes={`${!isPage ? 'h-48' : 'h-[42vh] md:h-[50vh'}`}
       />
 
+
       <div className="flex items-center gap-x-4">
         <div>
           <label className="mr-2 mb-1 inline-block text-white">
             Currency
           </label>
-          <CurrencySelectElement classes="max-w-40" />
+          <CurrencySelectElement 
+            selectedCurrecny={selectedCurrecny}
+            extEvent={calculateBudgetByCurrency} 
+            classes="max-w-40" 
+          />
         </div>
         <div>
           <label htmlFor="montlyBudget" className="mr-2 mb-1 inline-block text-white">
@@ -113,7 +126,11 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
             className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
             type="number"
             value={budget}
-            onInput={(e) => setBudget((e.target as HTMLInputElement).value)}
+            onInput={(e) => {
+              const budgetValue = (e.target as HTMLInputElement).value
+              setBudget(budgetValue)
+              localStorage.setItem('sbc_budget', budgetValue)
+            }}
             placeholder="You montly budget ..."
           />
         </div>
@@ -132,7 +149,7 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
                 <YAxis />
                 <Tooltip
                   formatter={(value: number | string) =>
-                    `${Number(value).toFixed(2)} ${displayCurrency}`
+                    `${Number(value).toFixed(2)} ${selectedCurrecny}`
                   }
                 />
                 <Bar dataKey="total" fill="#8884d8" name="Total" />
