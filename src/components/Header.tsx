@@ -27,9 +27,13 @@ export default function Header() {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    const result = await useLogout()
+    try {
+      const result = await useLogout()
       console.log("🚀 ~ handleLogout ~ result:", result)
+    } catch (error) {
+    } finally {
       navigate({ to: '/' })
+    }
   }
 
   const handleProfileClick = () => {
