@@ -28,6 +28,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     const result = await useLogout()
+      console.log("🚀 ~ handleLogout ~ result:", result)
       navigate({ to: '/' })
   }
 
