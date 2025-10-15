@@ -27,7 +27,7 @@ const CurrencySelectElement = ({ classes = '', extEvent, onChangeCurrency, selec
       }
       }
 
-      className={`w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400 ${classes}`}
+      className={`w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-purple-400 ${classes}`}
     >
       {Types.AvailableCurrencies.map((curr) => (
         <option key={curr} value={curr}>

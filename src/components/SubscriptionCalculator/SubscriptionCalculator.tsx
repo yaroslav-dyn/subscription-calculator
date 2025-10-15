@@ -1,4 +1,4 @@
-import {  useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Target } from 'lucide-react'
 import { isMobile } from 'react-device-detect'
 import SortableItem from '../SortableDragWrapper'
@@ -24,8 +24,8 @@ import DomainForm from './components/DomainSubscriptions/DomainForm'
 import EditSubscriptionModal from './EditSubscriptionModal'
 import SummaryBySubscriptions from './components/SummaryBySubscriptions'
 import DomainSubscriptions from './components/DomainSubscriptions'
-import type {SettingsStoreState} from '@/store/settingsStore';
-import type {ReactNode} from 'react';
+import { type SettingsStoreState, updateSettingsPanelStatus } from '@/store/settingsStore';
+import type { ReactNode } from 'react';
 import type { ISubscription } from '@/lib/utils/types'
 import CalculatorHeading from '@/components/CalculatorHeading'
 import { useGetAPIRates } from '@/lib/utils/calculator.utils'
@@ -44,7 +44,7 @@ import {
   updateDisplayCurrency,
   updateSubscription as updateSubscriptionAction,
 } from '@/store/subscriptionStore'
-import {  settingsStore } from '@/store/settingsStore'
+import { settingsStore } from '@/store/settingsStore'
 
 import {
   Types,
@@ -201,6 +201,13 @@ const SubscriptionCalculator = () => {
                     <Target className="w-5 h-5 mr-2" />
                     Settings
                   </h3>
+                  <Target
+                    xlinkTitle='Hide settings'
+                    size={30}
+                    onClick={() => updateSettingsPanelStatus('settings', !settingsStoreInstance.settings)}
+                    opacity={!settingsStoreInstance.settings ? '0.5' : '1'}
+                    className="text-white cursor-pointer hover:scale-110"
+                  />
                 </div>
 
                 <div className="space-y-4">
@@ -292,9 +299,8 @@ const SubscriptionCalculator = () => {
           {/* SECTION: Right Column - Results */}
           <section
             id="calc_right__column"
-            className={`${
-              settingsStoreInstance.settings ? 'lg:col-span-2' : 'lg:col-span-3'
-            } space-y-6`}
+            className={`${settingsStoreInstance.settings ? 'lg:col-span-2' : 'lg:col-span-3'
+              } space-y-6`}
           >
             <DndContext
               sensors={sensors}
@@ -337,11 +343,11 @@ const SubscriptionCalculator = () => {
 
       {/* SECTION: Edit Subscriptiom modal  */}
       <ModalUiWrapper isOpen={isEditModalOpen}>
-      <EditSubscriptionModal
-        onClose={() => setIsEditModalOpen(false)}
-        subscription={editingSubscription}
-        onSave={handleSaveSubscription}
-      />
+        <EditSubscriptionModal
+          onClose={() => setIsEditModalOpen(false)}
+          subscription={editingSubscription}
+          onSave={handleSaveSubscription}
+        />
       </ModalUiWrapper>
     </main>
   )

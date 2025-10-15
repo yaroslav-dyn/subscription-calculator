@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
 import { monthsArray } from '@/lib/utils/constants'
 import { useGetFullRates } from '@/lib/utils/calculator.utils'
+import { isMobileOnly } from 'react-device-detect'
 
 
 interface ISubRateTypes {
@@ -135,7 +136,7 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
             </ResponsiveContainer>
           </div>
           <br />
-          <div className="w-full h-64 md:h-96 mt-8">
+          <div className="w-full h-64 md:h-96 mt-8 mb-8">
             <div className="text-xl font-semibold mb-2 text-center text-white">
               % of budget spent by subscriptions per month
             </div>
@@ -149,41 +150,36 @@ const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
                   dataKey="percent"
                   fill="#82ca9d"
                   name="% of budget"
-                  label={({ x, y, width, index }) => {
-                    // Show sum above bar
-                    const sum = percentData[index!]?.sum ?? 0
-                    if (sum) {
-                      return (
-                        <text
-                          x={(x! as number) + (width as number) / 2}
-                          y={(y! as number) - 8}
-                          fill="#fff"
-                          textAnchor="middle"
-                          fontSize={12}
-                        >
-                          {sum.toFixed(2)} {selectedCurrecny}
-                        </text>
-                      )
-                    }
+                  label={({ x, y, width, index}) => {
+                    const sum = percentData[index!]?.sum ?? 0;
+                    if (!sum) return null;
+                    // If mobile, only show label for active bar
+                    if (isMobileOnly) return null;
+                    return (
+                      <text
+                        x={(x! as number) + (width as number) / 2}
+                        y={(y! as number) - 8}
+                        fill="#fff"
+                        textAnchor="middle"
+                        fontSize={12}
+                      >
+                        {sum.toFixed(2)} {selectedCurrecny}
+                      </text>
+                    );
                   }}
                 />
                 <Tooltip
                   cursor={false}
                   formatter={(
-                    value: number | string,
-                    props: any
+                    value,
+                    name,
+                    props
                   ) => {
-                    const { payload } = props
-                    const sum = payload?.sum ?? 0
+                    const itemSum = props?.payload?.sum
                     return [
-                      `${value}%`,
-                      `% of budget`,
-                      <div>
-                        <span>
-                          <b>Sum:</b> {sum.toFixed(2)} {selectedCurrecny}
-                        </span>
-                      </div>
-                    ]
+                      `${value}${name}`,
+                      `${itemSum.toFixed(2)} ${selectedCurrecny}`,
+                    ];
                   }}
                 />
               </BarChart>
@@ -247,7 +243,8 @@ const AnaliticsInputPanel = ({ selectedCurrecny, updateBudget, budget }: {
         </label>
         <input
           id="montlyBudget"
-          className="block border border-white rounded-2xl text-white p-2 bg-white/10 backdrop-blur-sm md:basis-24"
+          name="montly-budget"
+          className="block px-3 py-1.5 min-h-9 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-purple-400 md:basis-24"
           type="number"
           value={budget}
           onInput={(e) => {
