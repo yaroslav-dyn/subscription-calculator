@@ -1,5 +1,5 @@
 // import { subscriptionStore, updateSettingsPanelStatus, updateShowDomainStatus, updateShowRatesStatus } from '@/store/subscriptionStore'
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import {
   Banknote,
@@ -13,7 +13,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/lib/utils'
@@ -23,6 +23,7 @@ export default function Header() {
   const { data: user } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const location = useLocation()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -33,8 +34,12 @@ export default function Header() {
     setIsMenuOpen(false)
   }
 
+  const isDashBoardRoute = useMemo(() => {
+    return location?.pathname === '/'
+  }, [location])
+
   return (
-    <header className="mx-auto p-4 sticky top-0 z-20">
+    <header className={`mx-auto p-4 sticky top-0 z-20 ${!isMenuOpen ? 'backdrop-blur-lg' : ''} bg-white/10 border border-white/20 shadow-xl`}>
       {user && (
         <>
           {/* Mobile menu button */}
@@ -46,9 +51,8 @@ export default function Header() {
 
           {/* SECTION: Mobile Nav */}
           <div
-            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${
-              isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
+            className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+              }`}
           >
             <div className="flex flex-col justify-between min-h-full">
               <div className="flex items-center justify-between p-4">
@@ -106,14 +110,16 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Currency className="text-white w-6 h-6" />
-                  <span> Subscription analytics</span>
+                  <span> Analytics</span>
                 </Link>
               </nav>
 
-              <div>
-                <hr className="my-4 border-amber-100/50" />
-                <PanelsStatus classes="mb-4 justify-around" />
-              </div>
+              {isDashBoardRoute && (
+                <div>
+                  <hr className="my-4 border-amber-100/50" />
+                  <PanelsStatus classes="mb-4 justify-around" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -128,7 +134,7 @@ export default function Header() {
           {/* SECTION Desktop nav */}
           <nav className="hidden md:flex flex-row items-center justify-between text-white">
 
-            <PanelsStatus />
+
 
             <div className="flex items-center gap-x-4">
               <div className="font-semibold">
@@ -157,19 +163,23 @@ export default function Header() {
                   activeProps={{ className: `opacity-100` }}
                   to="/subscription-rate"
                 >
-                  Subscription analytics
+                  Analytics
                 </Link>
               </div>
             </div>
 
+
             <div className="flex items-center gap-x-6">
+              {isDashBoardRoute && (
+                <PanelsStatus classes='mr-4' />
+              )}
               <button
                 onClick={handleProfileClick}
                 className="px-2 py-1 bg-blue-500/80 rounded-xl text-white hover:bg-blue-500 transition-colors z-50 cursor-pointer"
               >
                 <User />
               </button>
-               <button
+              <button
                 onClick={handleLogout}
                 className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
               >
