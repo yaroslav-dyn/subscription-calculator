@@ -70,7 +70,7 @@ const RatesElement = ({
       window.removeEventListener('scroll', handleScroll)
     }
   }, [isPage])
-  
+
 
   const displayRates: Array<IDisplayRate> = useMemo(() => {
     return (
@@ -94,8 +94,9 @@ const RatesElement = ({
     )
   }, [actualRates, displayCurrency, currencyFilter, coefficiant])
 
+
   return (
-    <div className={`max-w-6xl mx-auto ${classes}`}>
+    <div className={`max-w-6xl mx-auto ${isPage ? 'min-h-[calc(100vh-118px)]' : ''} ${classes}`}>
       {hidePanelHeading && (
         <div ref={headingRef} className='page_heading' id='ratePageHeading'>
           <div className="text-center">

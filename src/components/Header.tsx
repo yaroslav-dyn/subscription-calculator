@@ -58,7 +58,7 @@ export default function Header() {
                 <Menu size={28} />
               </button>
             </div>
-
+            
             {/* SECTION: Mobile Nav */}
             <div
               className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-50 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'

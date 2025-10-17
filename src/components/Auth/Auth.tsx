@@ -98,7 +98,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return (
-      <div className="min-h-[calc(100vh-118px)] flex flex-col justify-center gap-y-4">
+      <div className="min-h-[calc(100vh-52px)] flex flex-col justify-center gap-y-4">
         {/* Background Elements */}
         <div className={`fixed min-h-screen md:inset-0 hidden xl:block`}>
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>

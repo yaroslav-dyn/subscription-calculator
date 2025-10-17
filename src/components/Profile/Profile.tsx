@@ -57,7 +57,7 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
   
   return (
     <div
-      className="absolute top-16 right-auto md:right-0 p-8 bg-black/30 backdrop-blur-lg rounded-lg flex justify-center items-center"
+      className="absolute top-16 right-auto md:right-0 p-6 bg-black/30 backdrop-blur-lg rounded-lg flex justify-center items-center"
       onClick={onClose}
     >
       <div
