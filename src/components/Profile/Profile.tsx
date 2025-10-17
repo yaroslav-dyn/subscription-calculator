@@ -2,13 +2,16 @@ import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Preloader from '@/components/ui/Preloader'
 import { setNotification } from '@/store/notificationStore'
-import { useLogout, useUser } from '@/lib/utils/auth.utils'
+import { userStore } from '@/store/user.store'
+import { useLogout} from '@/lib/utils/auth.utils'
 import { UserRoundCog, X } from 'lucide-react'
 import RemoveProofelement from '@/components/RemoveProofElement'
+import { useStore } from '@tanstack/react-store'
 
 
 const Profile = ({ onClose }: { onClose: () => void }) => {
-  const { data: user } = useUser()
+  
+   const { user } = useStore(userStore, (state) => state)
 
   const [loading, setLoading] = useState(false)
   const proofElementRef = useRef<{ data: any; title: string } | null>(null)
@@ -54,11 +57,11 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
   
   return (
     <div
-      className="absolute top-16 right-auto md:right-0  bg-black/50 backdrop-blur-sm rounded-lg flex justify-center items-center"
+      className="absolute top-16 right-auto md:right-0 p-6 bg-black/30 backdrop-blur-lg rounded-lg flex justify-center items-center"
       onClick={onClose}
     >
       <div
-        className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-xl text-white w-full max-w-md"
+        className="shadow-xl text-white w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         <div className='flex items-center justify-between mb-4'>

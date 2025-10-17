@@ -47,16 +47,16 @@ import {
 import { settingsStore } from '@/store/settingsStore'
 
 import {
-  Types,
-  useAuthListener,
+  Types, 
   useCalculatorUtils,
-  useUser,
 } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
+import { userStore } from '@/store/user.store'
+
 
 const SubscriptionCalculator = () => {
-  useAuthListener()
-  const { data: user } = useUser()
+
+  const { user } = useStore(userStore, (state) => state)
   // NOTE: STORE
   const { popularServices, displayCurrency, newDomain } = useStore(
     subscriptionStore,
@@ -113,6 +113,7 @@ const SubscriptionCalculator = () => {
     // Load saved order from localStorage on mount
     setPanelOrder()
     user && (fetchSubscriptions(user), fetchDomains(user))
+    console.log("🚀 ~ SubscriptionCalculator ~ user:", user)
   }, [user])
 
   const setPanelOrder = () => {

@@ -11,7 +11,7 @@ import {
   Area,
   Legend,
 } from 'recharts'
-import { useCalculatorUtils, useUser } from '@/lib/utils'
+import { useCalculatorUtils } from '@/lib/utils'
 import {
   fetchSubscriptions,
   subscriptionStore,
@@ -22,6 +22,7 @@ import CurrencySelectElement from '@/components/ui/CurrencySelect'
 import { monthsArray } from '@/lib/utils/constants'
 import { useGetFullRates } from '@/lib/utils/calculator.utils'
 import { isMobileOnly } from 'react-device-detect'
+import { userStore } from '@/store/user.store'
 
 
 interface ISubRateTypes {
@@ -32,7 +33,8 @@ interface ISubRateTypes {
 }
 
 const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
-  const { data: user } = useUser()
+  // useAuthListener()
+  const { user } = useStore(userStore, (state) => state)
   const { calculateYearlyCost, currencies } = useCalculatorUtils()
   const { subscriptions, isPendingSubscriptions, displayCurrency } = useStore(
     subscriptionStore,

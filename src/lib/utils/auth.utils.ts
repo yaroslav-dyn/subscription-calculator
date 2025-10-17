@@ -1,20 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-
-import { Store } from '@tanstack/store'
+import { userStore } from '@/store/user.store'
+console.log("🚀 ~ userStore:", userStore)
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import { setNotification } from '@/store/notificationStore'
 
-interface UserStoreState {
-  currentUser: User | null
-}
-
-const userStoreData = {
-  currentUser: null,
-}
-
-export const userStore = new Store<UserStoreState>(userStoreData)
 
 export const getUser = async () => {
   const {
@@ -28,17 +19,28 @@ export const getUser = async () => {
   return user
 }
 
+//TODO: excessive functionality
 export const useUser = () => {
   const user = useQuery({
     queryKey: ['user'],
     queryFn: getUser,
     staleTime: Infinity, // User data is stable, refetch on auth change
   })
+  return user
+}
+
+export const clearUser = () => {
   userStore.setState((state) => ({
     ...state,
-    user,
-  }))
-  return user
+    user: null
+  }));
+}
+
+export const setUser = (user: User) => {
+  userStore.setState((state) => ({
+    ...state,
+    user
+  }));
 }
 
 export const useAuthListener = () => {
@@ -56,17 +58,18 @@ export const useAuthListener = () => {
 
 
 export const useLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-    } catch (error: any) {
-      setNotification({
-        type: 'ERROR',
-        status: true,
-        message: error.error_description || error.message,
-        countdown: 6,
-      })
-    } finally {
-      return true
-    }
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  } catch (error: any) {
+    setNotification({
+      type: 'ERROR',
+      status: true,
+      message: error.error_description || error.message,
+      countdown: 6,
+    })
+  } finally {
+    clearUser()
+    return true
   }
+}

@@ -6,7 +6,7 @@ import {
   addSubscription as addSubscriptionToAction,
   subscriptionStore,
 } from '@/store/subscriptionStore'
-import {  useCalculatorUtils } from '@/lib/utils'
+import { useCalculatorUtils } from '@/lib/utils'
 import CurrencySelectElement from '@/components/ui/CurrencySelect'
 
 interface ICustomSubscriptionFrom {

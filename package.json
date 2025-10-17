@@ -2,7 +2,7 @@
   "name": "subscription-calculator",
   "private": true,
   "type": "module",
-  "version": "0.0.9.6",
+  "version": "0.0.9.8",
   "scripts": {
     "dev": "vite --port 3000",
     "start": "vite --port 3000",

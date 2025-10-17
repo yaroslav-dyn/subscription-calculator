@@ -5,7 +5,8 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="text-center text-sm text-gray-500 py-4 border-t border-gray-300 mt-8">
+    //border-t border-gray-300 
+    <footer className="bg-white/10  shadow-xl text-center text-sm text-gray-300 py-4 t-8">
       <small className="text-sm">
         {' '}
         &copy; {currentYear} Subscription Calculator. {version}v

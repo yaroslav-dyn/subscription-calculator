@@ -5,19 +5,24 @@ import CalculatorHeading from '@/components/CalculatorHeading'
 import { setNotification } from '@/store/notificationStore'
 import Preloader from '@/components/ui/Preloader'
 import VectorIconsUI from '../ui/VectorIcons'
+import { setUser as setUserState } from '@/lib/utils/auth.utils'
 
 export const Auth = ({ children }: { children: React.ReactNode }) => {
+
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
 
+
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session)
         setLoading(false)
+        setUserState(session?.user!)
+        console.log('onAuthStateChange', session)
       },
     )
 
@@ -93,7 +98,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return (
-      <div className="min-h-[calc(100vh-118px)] flex flex-col justify-center gap-y-4">
+      <div className="min-h-[calc(100vh-52px)] flex flex-col justify-center gap-y-4">
         {/* Background Elements */}
         <div className={`fixed min-h-screen md:inset-0 hidden xl:block`}>
           <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -159,6 +164,10 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
     )
+  }
+
+  if (loading) {
+    return <Preloader loading={loading} classes="bg-indigo-400/30" />
   }
 
   return <div>{children}</div>

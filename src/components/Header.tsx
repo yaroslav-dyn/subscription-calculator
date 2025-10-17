@@ -1,4 +1,3 @@
-// import { subscriptionStore, updateSettingsPanelStatus, updateShowDomainStatus, updateShowRatesStatus } from '@/store/subscriptionStore'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import {
@@ -15,12 +14,13 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { settingsStore, updateSettingsPanelStatus } from '@/store/settingsStore'
-import { useUser } from '@/lib/utils'
 import Profile from './Profile'
+import { userStore } from '@/store/user.store'
 import { useLogout } from '@/lib/utils/auth.utils'
 
+
 export default function Header() {
-  const { data: user } = useUser()
+  const { user } = useStore(userStore, (state) => state)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const location = useLocation()
@@ -29,7 +29,8 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       const result = await useLogout()
-      console.log("🚀 ~ handleLogout ~ result:", result)
+      console.log("🚀 ~ handleLogout ~ result:", result, typeof result)
+      if (!result) throw new Error('Error: while logout')
     } catch (error) {
     } finally {
       navigate({ to: '/' })
@@ -48,7 +49,7 @@ export default function Header() {
   return (
     <>
       {user && (
-        <header className={`mx-auto p-4 sticky top-0 z-20 ${!isMenuOpen ? 'backdrop-blur-lg' : ''} bg-white/10 border border-white/20 shadow-xl`}>
+        <header className={`mx-auto p-4 sticky top-0 z-20 ${!isMenuOpen ? 'md:backdrop-blur-lg' : ''} bg-white/10  shadow-xl`}>
 
           <>
             {/* Mobile menu button */}
@@ -57,10 +58,10 @@ export default function Header() {
                 <Menu size={28} />
               </button>
             </div>
-
+            
             {/* SECTION: Mobile Nav */}
             <div
-              className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-40 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+              className={`fixed top-0 left-0 h-full w-[80vw] bg-purple-900 bg-opacity-90 backdrop-blur-sm text-white transform transition-transform duration-300 ease-in-out z-50 min-full ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
               <div className="flex flex-col justify-between min-h-full">
@@ -186,7 +187,7 @@ export default function Header() {
                   <User />
                 </button>
                 <button
-                  onClick={useLogout}
+                  onClick={handleLogout}
                   className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
                 >
                   <LogOut />
