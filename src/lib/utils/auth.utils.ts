@@ -1,20 +1,11 @@
-import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-
-import { Store } from '@tanstack/store'
+import { userStore } from '@/store/user.store'
+console.log("🚀 ~ userStore:", userStore)
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import { setNotification } from '@/store/notificationStore'
 
-interface UserStoreState {
-  user: UseQueryResult<User | null, Error> | null
-}
-
-const userStoreData: UserStoreState = {
-  user: null,
-}
-
-export const userStore = new Store<UserStoreState>(userStoreData)
 
 export const getUser = async () => {
   const {
@@ -28,16 +19,13 @@ export const getUser = async () => {
   return user
 }
 
+//TODO: excessive functionality
 export const useUser = () => {
   const user = useQuery({
     queryKey: ['user'],
     queryFn: getUser,
     staleTime: Infinity, // User data is stable, refetch on auth change
   })
-  userStore.setState((state) => ({
-    ...state,
-    user: user,
-  }))
   return user
 }
 
@@ -45,6 +33,13 @@ export const clearUser = () => {
   userStore.setState((state) => ({
     ...state,
     user: null
+  }));
+}
+
+export const setUser = (user: User) => {
+  userStore.setState((state) => ({
+    ...state,
+    user
   }));
 }
 

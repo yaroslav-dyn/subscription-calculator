@@ -5,19 +5,24 @@ import CalculatorHeading from '@/components/CalculatorHeading'
 import { setNotification } from '@/store/notificationStore'
 import Preloader from '@/components/ui/Preloader'
 import VectorIconsUI from '../ui/VectorIcons'
+import { setUser as setUserState } from '@/lib/utils/auth.utils'
 
 export const Auth = ({ children }: { children: React.ReactNode }) => {
+
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
 
+
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session)
         setLoading(false)
+        setUserState(session?.user!)
+        console.log('onAuthStateChange', session)
       },
     )
 
@@ -159,6 +164,10 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
     )
+  }
+
+  if (loading) {
+    return <Preloader loading={loading} classes="bg-indigo-400/30" />
   }
 
   return <div>{children}</div>
