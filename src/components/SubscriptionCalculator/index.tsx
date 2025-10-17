@@ -1,5 +1,5 @@
 import { createRoute } from '@tanstack/react-router'
-import Auth from '../Auth'
+import Auth from '@/components/Auth'
 import SubscriptionCalculator from './SubscriptionCalculator'
 import type { RootRoute } from '@tanstack/react-router';
 

@@ -11,7 +11,7 @@ import {
   Area,
   Legend,
 } from 'recharts'
-import { useCalculatorUtils, useUser } from '@/lib/utils'
+import { useAuthListener, useCalculatorUtils, useUser } from '@/lib/utils'
 import {
   fetchSubscriptions,
   subscriptionStore,
@@ -32,6 +32,7 @@ interface ISubRateTypes {
 }
 
 const SubscriptionRate = ({ classes = '', isPage }: ISubRateTypes) => {
+  useAuthListener()
   const { data: user } = useUser()
   const { calculateYearlyCost, currencies } = useCalculatorUtils()
   const { subscriptions, isPendingSubscriptions, displayCurrency } = useStore(

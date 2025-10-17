@@ -186,7 +186,7 @@ export default function Header() {
                   <User />
                 </button>
                 <button
-                  onClick={useLogout}
+                  onClick={handleLogout}
                   className="px-2 py-1 bg-red-500/80 rounded-xl text-white hover:bg-red-500 transition-colors z-50 cursor-pointer"
                 >
                   <LogOut />
