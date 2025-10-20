@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { userStore } from '@/store/user.store'
-console.log("🚀 ~ userStore:", userStore)
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import { setNotification } from '@/store/notificationStore'

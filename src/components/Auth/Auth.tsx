@@ -22,7 +22,6 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         setSession(session)
         setLoading(false)
         setUserState(session?.user!)
-        console.log('onAuthStateChange', session)
       },
     )
 

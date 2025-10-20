@@ -113,7 +113,6 @@ const SubscriptionCalculator = () => {
     // Load saved order from localStorage on mount
     setPanelOrder()
     user && (fetchSubscriptions(user), fetchDomains(user))
-    console.log("🚀 ~ SubscriptionCalculator ~ user:", user)
   }, [user])
 
   const setPanelOrder = () => {
