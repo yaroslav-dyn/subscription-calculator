@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus, Target } from 'lucide-react'
 import { isMobile } from 'react-device-detect'
 import SortableItem from '../SortableDragWrapper'
@@ -52,6 +52,8 @@ import {
 } from '@/lib/utils'
 import RatesElement from '@/components/RatesElement/RatesElement'
 import { userStore } from '@/store/user.store'
+import RemoveProofelement from '@/components/RemoveProofElement'
+import { setNotification } from '@/store/notificationStore'
 
 
 const SubscriptionCalculator = () => {
@@ -62,8 +64,8 @@ const SubscriptionCalculator = () => {
     subscriptionStore,
     (state) => state,
   )
-
   const settingsStoreInstance = useStore(settingsStore, (state) => state)
+
   const { data: currentRates, isLoading } = useGetAPIRates()
 
   // NOTE: HOOKS
@@ -109,6 +111,34 @@ const SubscriptionCalculator = () => {
     }
   }
 
+
+ const proofElementRef = useRef<{ data: any; title: string } | null>(null)
+ const [isRemoveProofOpen, setIsRemoveProofOpen] = useState(false)
+
+  const removeProof = <T,>(params: { data: T; title: string }) => {
+    proofElementRef.current = { data: params.data, title: params.title }
+    setIsRemoveProofOpen(true)
+  }
+
+  const handleProofDelete = async () => {
+    if (proofElementRef.current?.data) {
+      const res = await removeDomainFromAction(proofElementRef.current?.data)
+      setNotification({
+        type: res ? 'SUCCESS' : 'ERROR',
+        status: true,
+        message: res ? 'Domain has been deleted successfully' : 'Operation was not successfull',
+      })
+    }
+    setIsRemoveProofOpen(false)
+    proofElementRef.current = null
+  }
+
+  const handleProofClose = () => {
+    setIsRemoveProofOpen(false)
+    proofElementRef.current = null
+  }
+
+
   useEffect(() => {
     // Load saved order from localStorage on mount
     setPanelOrder()
@@ -152,6 +182,16 @@ const SubscriptionCalculator = () => {
     }
   }
 
+  const triggerDomainModalOpt = useCallback(
+    () => setShowDomainForm(!showDomainForm),
+    [showDomainForm]
+  )
+
+  const deleteDomainWithProof = useCallback(
+    (id: string, name?: string): void => {
+      removeProof({ data: id, title: `You really want to delete: ${name ?? 'domain'}`});
+  }, [])
+
   const removeSubscription = (name: string) => {
     removeSubscriptionFromAction(name)
   }
@@ -178,8 +218,8 @@ const SubscriptionCalculator = () => {
     domains: settingsStoreInstance.domains && (
       <DomainSubscriptions
         hideAddButton={true}
-        removeDomainhandler={removeDomainFromAction}
-        triggerDomainModal={() => setShowDomainForm(true)}
+        triggerDomainModal={triggerDomainModalOpt}
+        removeDomainhandler={(id, name) => deleteDomainWithProof(id, name!)}
       />
     ),
     summary: <SummaryBySubscriptions projectionYears={projectionYears} />,
@@ -188,6 +228,7 @@ const SubscriptionCalculator = () => {
   return (
     <main className="p-4">
       <section className="relative max-w-6xl mx-auto max-lg:overflow-x-hidden">
+        
         <CalculatorHeading />
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -290,8 +331,7 @@ const SubscriptionCalculator = () => {
               {/* SECTION: Domain Renewal Tracker */}
               <DomainSubscriptions
                 hideAddButton={false}
-                removeDomainhandler={() => undefined}
-                triggerDomainModal={() => setShowDomainForm(!showDomainForm)}
+                triggerDomainModal={triggerDomainModalOpt}
               />
             </aside>
           )}
@@ -349,8 +389,20 @@ const SubscriptionCalculator = () => {
           onSave={handleSaveSubscription}
         />
       </ModalUiWrapper>
+
+
+      <RemoveProofelement
+        modalClasses='bg-white/40'
+        isOpen={isRemoveProofOpen}
+        title={proofElementRef.current?.title || ''}
+        onProofDelete={handleProofDelete}
+        onClose={handleProofClose}
+      />
+
     </main>
   )
 }
 
 export default SubscriptionCalculator
+
+

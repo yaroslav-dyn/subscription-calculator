@@ -15,6 +15,7 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
 
   const [loading, setLoading] = useState(false)
   const proofElementRef = useRef<{ data: any; title: string } | null>(null)
+  
   const [isRemoveProofOpen, setIsRemoveProofOpen] = useState(false)
 
   const removeProof = <T,>(params: { data: T; title: string }) => {

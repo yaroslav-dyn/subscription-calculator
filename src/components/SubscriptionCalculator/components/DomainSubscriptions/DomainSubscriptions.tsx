@@ -2,14 +2,17 @@ import { useStore } from '@tanstack/react-store'
 import { Bell, Clock, Globe, Plus, Trash2 } from 'lucide-react'
 import { useCalculatorUtils, useDomainUtils } from '@/lib/utils'
 import { subscriptionStore } from '@/store/subscriptionStore'
+import { memo } from 'react'
 
 interface IDomainSubscriptions {
   hideAddButton: boolean
-  removeDomainhandler: (name: string) => void
+  removeDomainhandler?: (id: string, name?: string) => void
   triggerDomainModal: () => void
 }
 
-const DomainSubscriptions = ({
+let renderCount = 0
+
+const DomainSubscriptions = memo(({
   hideAddButton,
   removeDomainhandler,
   triggerDomainModal,
@@ -20,6 +23,9 @@ const DomainSubscriptions = ({
     getStatusColor,
     getStatusBg,
   } = useDomainUtils()
+
+  console.log('/DomainSubscriptions.tsx', renderCount++);
+  
 
   const { displayCurrency, domains } = useStore(
     subscriptionStore,
@@ -125,7 +131,7 @@ const DomainSubscriptions = ({
                     </div>
                   </div>
                   <button
-                    onClick={() => removeDomainhandler(domain.id as string)}
+                    onClick={() => removeDomainhandler?.(domain.id as string, domain.name as string)}
                     className="p-1 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -138,6 +144,6 @@ const DomainSubscriptions = ({
       )}
     </div>
   )
-}
+})
 
 export default DomainSubscriptions

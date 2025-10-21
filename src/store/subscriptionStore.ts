@@ -1,5 +1,5 @@
 import { Store } from '@tanstack/store'
-import type { IDomain, Types  } from '@/lib/utils';
+import type { IDomain, Types } from '@/lib/utils';
 import type { ISubscription } from '@/lib/utils/types'
 import type { User } from '@supabase/supabase-js'
 import { popularServices } from '@/lib/utils/constants'
@@ -259,19 +259,24 @@ export const removeDomainFromSupabase = async (domainId: string) => {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) return { success: false, error: 'No user' }
 
-  const { error } = await supabase.from('domains').delete().eq('id', domainId)
+  try {
+    const response = await supabase.from('domains').delete().eq('id', domainId)
 
-  if (error) {
-    console.error('Error removing domain:', error)
-    return
+    if (response?.error) {
+      console.error('Error removing domain:', response?.error)
+      return { success: false, error: response?.error }
+    }
+
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: state.domains.filter((d) => d.id !== domainId),
+    }))
+    return { success: true }
+  } catch (error: unknown) {
+    return { success: false, error }
   }
-
-  subscriptionStore.setState((state) => ({
-    ...state,
-    domains: state.domains.filter((d) => d.id !== domainId),
-  }))
 }
 
 /**
@@ -333,5 +338,6 @@ export const addDomain = async () => {
  * @param domainId The id of the domain to remove.
  */
 export const removeDomain = async (domainId: string) => {
-  await removeDomainFromSupabase(domainId)
+  const res = await removeDomainFromSupabase(domainId)
+  return res
 }

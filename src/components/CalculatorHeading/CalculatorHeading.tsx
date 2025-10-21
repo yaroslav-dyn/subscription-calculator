@@ -1,4 +1,5 @@
 // import { Calculator } from 'lucide-react'
+import { memo } from 'react'
 import appLogo from '../../logo_opt.png'
 
 interface HeadingCalculatorTypes {
@@ -7,11 +8,13 @@ interface HeadingCalculatorTypes {
   classes?: string
 }
 
-export const CalculatorHeading = ({
+export const CalculatorHeading = memo(({
   heading = '',
   slogan = '',
   classes = '',
 }: HeadingCalculatorTypes) => {
+
+
   return (
     <div className={`calc_heading ${classes}`}>
       <div className="text-center mt-6">
@@ -33,4 +36,4 @@ export const CalculatorHeading = ({
       </div>
     </div>
   )
-}
+})
