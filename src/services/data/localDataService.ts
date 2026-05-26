@@ -2,7 +2,7 @@ import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import type { IDataService } from './types'
 import type { ISubscription } from '@/lib/utils/types'
 import type { IDomain } from '@/lib/utils/domain.utils'
-import demoData from '../../../sql/.demo_data.json'
+// import demoData from '../../../sql/.demo_data.json'
 
 const DB_NAME = 'subscription-calculator-local'
 const DB_VERSION = 1
@@ -52,31 +52,32 @@ function getDB(): Promise<IDBPDatabase<MyDB>> {
   return dbPromise
 }
 
-function normalizeDomain(raw: any): LocalDomain {
-  return {
-    id: raw.id || crypto.randomUUID(),
-    name: raw.name,
-    provider: raw.provider || 'Cloudflare',
-    expiry_date: raw.expiry_date,
-    renewal_cost: raw.renewal_cost || '0',
-    auto_renewal: raw.auto_renewal ?? raw.autoRenewal ?? false,
-    user_id: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-}
 
-function normalizeSubscription(raw: any): LocalSubscription {
-  return {
-    id: raw.id || crypto.randomUUID(),
-    name: raw.name,
-    price: raw.price,
-    period: raw.period,
-    currency: raw.currency,
-    user_id: '',
-    created_at: new Date().toISOString(),
-  }
-}
+// function normalizeDomain(raw: any): LocalDomain {
+//   return {
+//     id: raw.id || crypto.randomUUID(),
+//     name: raw.name,
+//     provider: raw.provider || 'Cloudflare',
+//     expiry_date: raw.expiry_date,
+//     renewal_cost: raw.renewal_cost || '0',
+//     auto_renewal: raw.auto_renewal ?? raw.autoRenewal ?? false,
+//     user_id: '',
+//     created_at: new Date().toISOString(),
+//     updated_at: new Date().toISOString(),
+//   }
+// }
+
+// function normalizeSubscription(raw: any): LocalSubscription {
+//   return {
+//     id: raw.id || crypto.randomUUID(),
+//     name: raw.name,
+//     price: raw.price,
+//     period: raw.period,
+//     currency: raw.currency,
+//     user_id: '',
+//     created_at: new Date().toISOString(),
+//   }
+// }
 
 export async function seedLocalDB(userId: string): Promise<void> {
   const db = await getDB()
@@ -92,19 +93,20 @@ export async function seedLocalDB(userId: string): Promise<void> {
     return
   }
 
+  //NOTE: Demo data
   // Seed subscriptions
-  for (const sub of demoData.subscriptions) {
-    const normalized = normalizeSubscription(sub)
-    normalized.user_id = userId
-    await subStore.add(normalized)
-  }
+  // for (const sub of demoData.subscriptions) {
+  //   const normalized = normalizeSubscription(sub)
+  //   normalized.user_id = userId
+  //   await subStore.add(normalized)
+  // }
 
   // Seed domains
-  for (const domain of demoData.domains) {
-    const normalized = normalizeDomain(domain)
-    normalized.user_id = userId
-    await domainStore.add(normalized)
-  }
+  // for (const domain of demoData.domains) {
+  //   const normalized = normalizeDomain(domain)
+  //   normalized.user_id = userId
+  //   await domainStore.add(normalized)
+  // }
 
   await tx.done
 }
