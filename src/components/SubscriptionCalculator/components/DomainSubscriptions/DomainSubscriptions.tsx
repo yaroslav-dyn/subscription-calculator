@@ -37,7 +37,7 @@ const DomainSubscriptions = memo(({
   return (
     <div className="DomainSubscriptions-component backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold flex items-center">
+        <h3 className="text-white font-semibold flex items-center text-base md:text-xl">
           <Globe className="w-5 h-5 mr-2" />
           Domain Renewals
         </h3>

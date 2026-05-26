@@ -62,7 +62,7 @@ const Subscriptions = ({
 
       <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-semibold flex items-center">
+          <h3 className="text-white font-semibold flex items-center text-base md:text-xl">
             <BarChart3 className="w-5 h-5 mr-2" />
             Your Subscriptions
           </h3>
@@ -101,7 +101,10 @@ const Subscriptions = ({
                     </button>
                     <button
                       onClick={() =>
-                        removeProof({ data: sub.name, title: `Delete ${sub.name}?` })
+                        removeProof({
+                          data: sub.name,
+                          title: `Delete ${sub.name}?`,
+                        })
                       }
                       className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-all duration-300"
                     >
@@ -134,7 +137,7 @@ const Subscriptions = ({
 
       {/* Empty State */}
       {subscriptions.length === 0 && (
-        <NoRecordsState showAddFormhandler={showAddFormhandler}  />
+        <NoRecordsState showAddFormhandler={showAddFormhandler} />
       )}
 
       <RemoveProofelement
