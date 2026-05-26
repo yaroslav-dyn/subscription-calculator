@@ -4,6 +4,11 @@ import Auth from './components/Auth'
 import SubscriptionCalculator from '@/components/SubscriptionCalculator/SubscriptionCalculator'
 import { supabase } from './lib/supabaseClient'
 
+// Mock config to run tests in Supabase mode
+vi.mock('@/services/config', () => ({
+  isLocalMode: false,
+}))
+
 // Mock the supabase client
 vi.mock('./lib/supabaseClient', () => ({
   supabase: {
@@ -20,7 +25,7 @@ vi.mock('./lib/supabaseClient', () => ({
 }))
 
 describe('App', () => {
-  
+
   test('renders', () => {
     render(
       <Auth>
@@ -32,7 +37,7 @@ describe('App', () => {
 
   test('user can sign up', async () => {
     // @ts-expect-error: mock implementation
-    supabase.auth.signUp.mockResolvedValueOnce({ error: null })
+    supabase!.auth.signUp.mockResolvedValueOnce({ error: null })
 
     render(
       <Auth>
@@ -62,7 +67,7 @@ describe('App', () => {
     // Wait for the async actions to complete
     await waitFor(() => {
       // Check if signUp was called correctly
-      expect(supabase.auth.signUp).toHaveBeenCalledWith({
+      expect(supabase!.auth.signUp).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
       })
@@ -76,7 +81,7 @@ describe('App', () => {
 
   test('user can sign in', async () => {
     // @ts-expect-error: mock implementation
-    supabase.auth.signInWithPassword.mockResolvedValueOnce({ error: null })
+    supabase!.auth.signInWithPassword.mockResolvedValueOnce({ error: null })
 
     render(
       <Auth>
@@ -103,7 +108,7 @@ describe('App', () => {
     // Wait for the async actions to complete
     await waitFor(() => {
       // Check if signInWithPassword was called correctly
-      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+      expect(supabase!.auth.signInWithPassword).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
       })

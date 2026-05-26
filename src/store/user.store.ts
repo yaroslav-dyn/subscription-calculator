@@ -1,9 +1,8 @@
-import type { User } from '@supabase/supabase-js'
 import { Store } from '@tanstack/store'
-
+import type { AppUser } from '@/services/auth'
 
 interface UserStoreState {
-  user: User | null
+  user: AppUser | null
 }
 
 const userStoreData: UserStoreState = {

@@ -43,9 +43,9 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
   const handleDeleteAccount = async () => {
     setLoading(true)
     try {
-      const { error } = await supabase.rpc('delete_user')
+      const { error } = await supabase!.rpc('delete_user')
       if (error) throw error
-      await supabase.auth.signOut()
+      await supabase!.auth.signOut()
     } catch (error: any) {
       setNotification({
         type: 'ERROR',
@@ -85,7 +85,7 @@ const Profile = ({ onClose }: { onClose: () => void }) => {
                 <strong>Email:</strong> {user.email}
               </p>
               <p>
-                <strong>Provider:</strong> {user.app_metadata.provider}
+                <strong>Provider:</strong> {user.app_metadata?.provider}
               </p>
             </div>
             <div className="mt-6 flex justify-between">
