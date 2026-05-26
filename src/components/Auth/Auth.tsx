@@ -6,6 +6,9 @@ import { setNotification } from '@/store/notificationStore'
 import Preloader from '@/components/ui/Preloader'
 import VectorIconsUI from '../ui/VectorIcons'
 import { setUser as setUserState } from '@/lib/utils/auth.utils'
+import { isLocalMode } from '@/services/config'
+import { authService } from '@/services/auth'
+import { seedLocalDB } from '@/services/data/localDataService'
 
 export const Auth = ({ children }: { children: React.ReactNode }) => {
 
@@ -15,9 +18,17 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
 
-
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    if (isLocalMode) {
+      authService.getUser().then(async (user) => {
+        setUserState(user!)
+        await seedLocalDB(user!.id)
+        setLoading(false)
+      })
+      return
+    }
+
+    const { data: authListener } = supabase!.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session)
         setLoading(false)
@@ -25,7 +36,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
       },
     )
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase!.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
     })
@@ -40,7 +51,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
     setLoading(true)
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { error } = await supabase!.auth.signUp({ email, password })
         if (error) throw error
         console.error('Sign up successful! Please sign in.')
         setNotification({
@@ -50,7 +61,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
         })
         setIsSignUp(false) // Switch to sign in form
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase!.auth.signInWithPassword({
           email,
           password,
         })
@@ -72,7 +83,7 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
   async function signInWithGoogle() {
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase!.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: import.meta.env.VITE_APP_SUPPABASE_REDIRECT_URL
@@ -91,9 +102,12 @@ export const Auth = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // if (loading) {
-  //   return <div className="text-white text-center p-4 min-h-screen">Loading...</div>
-  // }
+  if (isLocalMode) {
+    if (loading) {
+      return <Preloader loading={loading} classes="bg-indigo-400/30" />
+    }
+    return <div>{children}</div>
+  }
 
   if (!session) {
     return (

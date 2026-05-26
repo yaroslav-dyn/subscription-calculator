@@ -1,9 +1,10 @@
 import { Store } from '@tanstack/store'
 import type { IDomain, Types } from '@/lib/utils';
 import type { ISubscription } from '@/lib/utils/types'
-import type { User } from '@supabase/supabase-js'
+import type { AppUser } from '@/services/auth'
 import { popularServices } from '@/lib/utils/constants'
-import { supabase } from '@/lib/supabaseClient'
+import { dataService } from '@/services/data'
+import { authService } from '@/services/auth'
 
 export type TCurrency = Types.CurrencyValue
 
@@ -41,26 +42,18 @@ export const subscriptionStore = new Store<SubscriptionStoreState>(defaultState)
 // --- Actions to manipulate the store ---
 
 /**
- * Fetches subscriptions from Supabase and updates the store.
+ * Fetches subscriptions from the data service and updates the store.
  */
-export const fetchSubscriptions = async (user: User) => {
+export const fetchSubscriptions = async (user: AppUser) => {
   if (!user) return
 
   let isLoading = true
-  let subsData: Array<any> = []
+  let subsData: Array<ISubscription> = []
 
   try {
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-
-    if (error) {
-      console.error('Error fetching subscriptions:', error)
-      throw new Error(error.message || error?.details)
-    }
-    subsData = data
+    subsData = await dataService.fetchSubscriptions(user.id)
   } catch (error: unknown) {
+    console.error('Error fetching subscriptions:', error)
     isLoading = false
   } finally {
     subscriptionStore.setState((state) => ({
@@ -72,68 +65,49 @@ export const fetchSubscriptions = async (user: User) => {
 }
 
 /**
- * Adds a new subscription to the user's list and Supabase.
+ * Adds a new subscription to the user's list and the data service.
  * @param subscription The subscription to add.
  */
 export const addSubscription = async (subscription: ISubscription) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await authService.getUser()
   if (!user) return
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .insert([{ ...subscription, user_id: user.id }])
-    .select()
-
-  if (error) {
-    console.error('Error adding subscription:', error)
-    return
-  }
-
-  if (data) {
+  try {
+    const newSub = await dataService.addSubscription(subscription, user.id)
     subscriptionStore.setState((state) => ({
       ...state,
-      subscriptions: [...state.subscriptions, data[0]],
+      subscriptions: [...state.subscriptions, newSub],
     }))
+  } catch (error) {
+    console.error('Error adding subscription:', error)
   }
 }
 
 /**
- * Removes a subscription from the user's list and Supabase by its name.
+ * Removes a subscription from the user's list and the data service by its name.
  * @param subscriptionName The name of the subscription to remove.
  */
 export const removeSubscription = async (subscriptionName: string) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return
-
   const subToRemove = subscriptionStore.state.subscriptions.find(
     (s) => s.name === subscriptionName,
   )
-  if (!subToRemove) return
+  if (!subToRemove?.id) return
 
-  const { error } = await supabase
-    .from('subscriptions')
-    .delete()
-    .eq('id', subToRemove.id)
-
-  if (error) {
+  try {
+    await dataService.removeSubscription(subToRemove.id)
+    subscriptionStore.setState((state) => ({
+      ...state,
+      subscriptions: state.subscriptions.filter(
+        (s) => s.name !== subscriptionName,
+      ),
+    }))
+  } catch (error) {
     console.error('Error removing subscription:', error)
-    return
   }
-
-  subscriptionStore.setState((state) => ({
-    ...state,
-    subscriptions: state.subscriptions.filter(
-      (s) => s.name !== subscriptionName,
-    ),
-  }))
 }
 
 /**
- * Updates an existing subscription in the user's list and Supabase.
+ * Updates an existing subscription in the user's list and the data service.
  * @param subscriptionName The name of the subscription to update.
  * @param updatedValues An object containing the properties to update.
  */
@@ -141,34 +115,21 @@ export const updateSubscription = async (
   subscriptionName: string,
   updatedValues: Partial<ISubscription>,
 ) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return
-
   const subToUpdate = subscriptionStore.state.subscriptions.find(
     (s) => s.name === subscriptionName,
   )
-  if (!subToUpdate) return
+  if (!subToUpdate?.id) return
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .update(updatedValues)
-    .eq('id', subToUpdate.id)
-    .select()
-
-  if (error) {
-    console.error('Error updating subscription:', error)
-    return
-  }
-
-  if (data) {
+  try {
+    const updated = await dataService.updateSubscription(subToUpdate.id, updatedValues)
     subscriptionStore.setState((state) => ({
       ...state,
       subscriptions: state.subscriptions.map((s) =>
-        s.name === subscriptionName ? data[0] : s,
+        s.name === subscriptionName ? updated : s,
       ),
     }))
+  } catch (error) {
+    console.error('Error updating subscription:', error)
   }
 }
 
@@ -196,35 +157,28 @@ export const setNewDomain = (domain: IDomain) => {
 }
 
 /**
- * Fetches domains from Supabase and updates the store.
+ * Fetches domains from the data service and updates the store.
  */
-export const fetchDomains = async (user: User) => {
+export const fetchDomains = async (user: AppUser) => {
   if (!user) return
 
-  const { data, error } = await supabase
-    .from('domains')
-    .select('*')
-    .eq('user_id', user.id)
-
-  if (error) {
+  try {
+    const domains = await dataService.fetchDomains(user.id)
+    subscriptionStore.setState((state) => ({
+      ...state,
+      domains: domains || [],
+    }))
+  } catch (error) {
     console.error('Error fetching domains:', error)
-    return
   }
-
-  subscriptionStore.setState((state) => ({
-    ...state,
-    domains: data || [],
-  }))
 }
 
 /**
- * Adds a new domain to Supabase and updates the store.
+ * Adds a new domain to the data service and updates the store.
  * @param domain The domain to add.
  */
 export const addDomainToSupabase = async (domain: IDomain) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await authService.getUser()
   if (!user) return
 
   const domainToInsert = {
@@ -233,54 +187,37 @@ export const addDomainToSupabase = async (domain: IDomain) => {
     renewal_cost: domain.renewal_cost || '0',
   }
 
-  const { data, error } = await supabase
-    .from('domains')
-    .insert([domainToInsert])
-    .select()
-
-  if (error) {
-    console.error('Error adding domain:', error)
-    return
-  }
-
-  if (data) {
+  try {
+    const newDomain = await dataService.addDomain(domainToInsert, user.id)
     subscriptionStore.setState((state) => ({
       ...state,
-      domains: [...state.domains, data[0]],
+      domains: [...state.domains, newDomain],
     }))
+  } catch (error) {
+    console.error('Error adding domain:', error)
   }
 }
 
 /**
- * Removes a domain from Supabase and updates the store.
+ * Removes a domain from the data service and updates the store.
  * @param domainId The id of the domain to remove.
  */
 export const removeDomainFromSupabase = async (domainId: string) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'No user' }
-
   try {
-    const response = await supabase.from('domains').delete().eq('id', domainId)
-
-    if (response?.error) {
-      console.error('Error removing domain:', response?.error)
-      return { success: false, error: response?.error }
-    }
-
+    await dataService.removeDomain(domainId)
     subscriptionStore.setState((state) => ({
       ...state,
       domains: state.domains.filter((d) => d.id !== domainId),
     }))
     return { success: true }
   } catch (error: unknown) {
+    console.error('Error removing domain:', error)
     return { success: false, error }
   }
 }
 
 /**
- * Updates an existing domain in Supabase and updates the store.
+ * Updates an existing domain in the data service and updates the store.
  * @param domainId The id of the domain to update.
  * @param updatedValues An object containing the properties to update.
  */
@@ -288,32 +225,19 @@ export const updateDomainInSupabase = async (
   domainId: string,
   updatedValues: Partial<IDomain>,
 ) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return
-
-  const { data, error } = await supabase
-    .from('domains')
-    .update(updatedValues)
-    .eq('id', domainId)
-    .select()
-
-  if (error) {
-    console.error('Error updating domain:', error)
-    return
-  }
-
-  if (data) {
+  try {
+    const updated = await dataService.updateDomain(domainId, updatedValues)
     subscriptionStore.setState((state) => ({
       ...state,
-      domains: state.domains.map((d) => (d.id === domainId ? data[0] : d)),
+      domains: state.domains.map((d) => (d.id === domainId ? updated : d)),
     }))
+  } catch (error) {
+    console.error('Error updating domain:', error)
   }
 }
 
 /**
- * Adds a new domain to the user's list and Supabase.
+ * Adds a new domain to the user's list and the data service.
  */
 export const addDomain = async () => {
   const domainToAdd = subscriptionStore.state.newDomain
@@ -334,7 +258,7 @@ export const addDomain = async () => {
 }
 
 /**
- * Removes a domain from the user's list and Supabase by its id.
+ * Removes a domain from the user's list and the data service by its id.
  * @param domainId The id of the domain to remove.
  */
 export const removeDomain = async (domainId: string) => {

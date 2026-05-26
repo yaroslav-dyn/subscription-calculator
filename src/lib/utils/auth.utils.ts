@@ -1,21 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { userStore } from '@/store/user.store'
-import type { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabaseClient'
+import type { AppUser } from '@/services/auth'
+import { authService } from '@/services/auth'
 import { setNotification } from '@/store/notificationStore'
 
-
 export const getUser = async () => {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-  if (error) {
-    console.error('Error getting user:', error.message)
-    return null
-  }
-  return user
+  return authService.getUser()
 }
 
 //TODO: excessive functionality
@@ -35,7 +26,7 @@ export const clearUser = () => {
   }));
 }
 
-export const setUser = (user: User) => {
+export const setUser = (user: AppUser | null) => {
   userStore.setState((state) => ({
     ...state,
     user
@@ -45,12 +36,13 @@ export const setUser = (user: User) => {
 export const useAuthListener = () => {
   const queryClient = useQueryClient()
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+    const unsubscribe = authService.onAuthStateChange((user) => {
+      setUser(user)
       // Invalidate user query to refetch
       queryClient.invalidateQueries({ queryKey: ['user'] })
     })
     return () => {
-      authListener?.subscription.unsubscribe()
+      unsubscribe()
     }
   }, [queryClient])
 }
@@ -58,8 +50,7 @@ export const useAuthListener = () => {
 
 export const useLogout = async () => {
   try {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    await authService.signOut()
   } catch (error: any) {
     setNotification({
       type: 'ERROR',
